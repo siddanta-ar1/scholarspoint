@@ -1,0 +1,79 @@
+'use client' // This is correctly placed at the very top.
+
+import Link from 'next/link'
+import {
+  FacebookIcon,
+  Instagram,
+  Youtube,
+  MessageCircleMore as Discord,
+  Music2 as Tiktok
+} from 'lucide-react'
+
+export function Footer() {
+  // `new Date().getFullYear()` can run on both client and server.
+  // If this component ever needed client-side state, effects, or browser APIs,
+  // the 'use client' directive would be essential. For a footer, it's a common
+  // practice to allow for future interactivity.
+  const year = new Date().getFullYear()
+
+  return (
+    <footer className="bg-gray-50 border-t mt-10 text-gray-700">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {/* ScholarsPoint Brand */}
+          <div>
+            <h2 className="text-2xl font-bold text-blue-600">🎓 ScholarsPoint</h2>
+            <p className="text-sm mt-2">
+              Explore scholarships, internships, fellowships, and visa guidance tailored for students around the world.
+            </p>
+          </div>
+
+          {/* Useful Links */}
+          <div className="space-y-2">
+            <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">Quick Links</h3>
+            <ul className="space-y-1">
+              {/* `Link` component works fine in client components */}
+              <li><Link href="/privacy" className="hover:text-blue-600 transition-colors">Privacy Policy</Link></li>
+              <li><Link href="/terms" className="hover:text-blue-600 transition-colors">Terms of Service</Link></li>
+              <li><Link href="/contact" className="hover:text-blue-600 transition-colors">Contact Us</Link></li>
+              <li><Link href="/about" className="hover:text-blue-600 transition-colors">About Us</Link></li>
+            </ul>
+          </div>
+
+          {/* Social Media */}
+          <div>
+            <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">Follow Us</h3>
+            <div className="flex space-x-4 mt-2">
+<div className="flex items-center gap-4">
+  <Link href="https://www.facebook.com/scholars.point.133274" target="_blank" className="hover:text-blue-600 transition-colors">
+    <FacebookIcon size={22} />
+  </Link>
+  <Link href="https://www.instagram.com/scholarspoint3/" target="_blank" className="hover:text-pink-500 transition-colors">
+    <Instagram size={22} />
+  </Link>
+  <Link href="https://www.youtube.com/@siddantasodari5147/videos" target="_blank" className="hover:text-red-600 transition-colors">
+    <Youtube size={22} />
+  </Link>
+  <Link href="https://www.tiktok.com/@scholars_point" target="_blank" className="hover:text-black transition-colors">
+    <Tiktok size={22} />
+  </Link>
+  <Link href="https://discord.com/channels/1349749753965183087/1349749754648858636" target="_blank" className="hover:text-indigo-500 transition-colors">
+    <Discord size={22} />
+  </Link>
+</div>
+
+            </div>
+          </div>
+        </div>
+
+        {/* Bottom copyright */}
+        <div className="mt-10 border-t pt-4 text-sm text-gray-500 flex flex-col md:flex-row justify-between items-center">
+          <p>
+            &copy; {year} <span className="font-semibold text-blue-600">ScholarsPoint</span>. All rights reserved.
+          </p>
+          <p className="text-xs mt-2 md:mt-0">You are only the reason for your success .</p>
+        </div>
+      </div>
+    </footer>
+  )
+}

@@ -1,103 +1,177 @@
-import Image from "next/image";
+'use client'
 
-export default function Home() {
+import { useEffect, useState } from 'react'
+import Link from 'next/link'
+import Image from 'next/image'
+import { supabase } from '@/lib/supabaseClient'
+import { BadgeCheck } from 'lucide-react'
+
+type OpportunityPreview = {
+  id: string
+  title: string
+  organization?: string
+  company?: string
+  student_level: string
+  image_url?: string
+}
+
+const images = [
+  'https://images.unsplash.com/photo-1522071820081-009f0129c71c?w=500&auto=format&fit=crop&q=60',
+  'https://images.unsplash.com/photo-1565689157206-0fddef7589a2?w=500&auto=format&fit=crop&q=60',
+  'https://images.unsplash.com/photo-1606761568499-6d2451b23c66?w=400&auto=format&fit=crop&q=60',
+  'https://images.unsplash.com/photo-1581362072978-14998d01fdaa?w=400&auto=format&fit=crop&q=60',
+  'https://images.unsplash.com/photo-1494178270175-e96de2971df9?w=500&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MTh8fHN1Y2Nlc3N8ZW58MHx8MHx8fDA%3D',
+  'https://images.unsplash.com/photo-1523287562758-66c7fc58967f?w=400&auto=format&fit=crop&q=60',
+]
+
+
+export default function HomePage() {
+  const [scholarships, setScholarships] = useState<OpportunityPreview[]>([])
+  const [internships, setInternships] = useState<OpportunityPreview[]>([])
+  const [fellowships, setFellowships] = useState<OpportunityPreview[]>([])
+  const [currentImageIndex, setCurrentImageIndex] = useState(0)
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const { data: sch } = await supabase
+        .from('scholarships')
+        .select('id, title, organization, student_level, image_url')
+        .eq('is_active', true)
+        .limit(3)
+
+      const { data: int } = await supabase
+        .from('internships')
+        .select('id, title, company, student_level, image_url')
+        .eq('is_active', true)
+        .limit(3)
+
+      const { data: fel } = await supabase
+        .from('fellowships')
+        .select('id, title, organization, student_level, image_url')
+        .eq('is_active', true)
+        .limit(3)
+
+      if (sch) setScholarships(sch)
+      if (int) setInternships(int)
+      if (fel) setFellowships(fel)
+    }
+
+    fetchData()
+  }, [])
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentImageIndex((prev) => (prev + 1) % images.length)
+    }, 5000)
+    return () => clearInterval(interval)
+  }, [])
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
+    <main className="max-w-7xl mx-auto px-4 py-8 space-y-20">
+      {/* Hero Section */}
+      <section className="relative rounded-lg overflow-hidden h-96 shadow-lg">
+        <video
+          className="absolute inset-0 w-full h-full object-cover brightness-75"
+          src="https://cdn.pixabay.com/video/2023/03/09/156110-810025544_large.mp4"
+          autoPlay
+          muted
+          loop
+          playsInline
         />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+        <div className="relative z-10 flex flex-col justify-center items-center h-full text-white text-center px-4">
+          <h1 className="text-4xl md:text-5xl font-bold drop-shadow-md max-w-3xl text-black">
+            Discover Your Next Opportunity with ScholarsPoint 🎓
+          </h1>
+          <p className="mt-4 text-lg text-black max-w-xl drop-shadow">
+            Scholarships, Internships & Fellowships for Students Worldwide.
+          </p>
+          <Link
+            href="/scholarships"
+            className="mt-6 bg-blue-600 hover:bg-blue-700 transition-colors text-white font-semibold py-3 px-6 rounded-lg shadow-md"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+            Browse Scholarships
+          </Link>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
+      </section>
+
+      {/* Mobile Slideshow */}
+      <section className="relative w-full h-64 md:hidden rounded-xl overflow-hidden shadow-lg">
+        {images.map((src, index) => (
           <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+            key={index}
+            src={src}
+            alt={`Slide ${index + 1}`}
+            fill
+            sizes="100vw"
+            className={`absolute inset-0 object-cover transition-opacity duration-1000 ${
+              index === currentImageIndex ? 'opacity-100 z-10' : 'opacity-0 z-0'
+            }`}
+            priority={index === 0}
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        ))}
+      </section>
+
+      {/* Featured Opportunities */}
+      <section>
+        <h2 className="text-3xl font-bold mb-8 text-center">Featured Opportunities</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
+          <OpportunityList title="Scholarships" data={scholarships} type="scholarships" labelKey="organization" />
+          <OpportunityList title="Internships" data={internships} type="internships" labelKey="company" />
+          <OpportunityList title="Fellowships" data={fellowships} type="fellowships" labelKey="organization" />
+        </div>
+      </section>
+    </main>
+  )
+}
+
+type Props = {
+  title: string
+  data: OpportunityPreview[]
+  type: string
+  labelKey: 'organization' | 'company'
+}
+
+function OpportunityList({ title, data, type, labelKey }: Props) {
+  return (
+    <div>
+      <h3 className="text-xl font-semibold mb-4 flex items-center gap-2">
+        {title} <BadgeCheck className="text-blue-500" size={20} />
+      </h3>
+      <ul className="space-y-4">
+        {data.map((item) => (
+          <li
+            key={item.id}
+            className="border rounded-xl overflow-hidden hover:shadow-lg transition-shadow bg-white"
+          >
+            <Link href={`/${type}/${item.id}`} className="flex gap-4">
+              {item.image_url ? (
+                <Image
+                  src={item.image_url}
+                  alt={item.title}
+                  width={80}
+                  height={80}
+                  className="w-24 h-24 object-cover"
+                />
+              ) : (
+                <div className="w-24 h-24 bg-gray-200 flex items-center justify-center text-sm text-gray-500">
+                  No Image
+                </div>
+              )}
+              <div className="py-2 pr-3">
+                <h4 className="font-semibold text-blue-700 line-clamp-2">{item.title}</h4>
+                <p className="text-sm text-gray-600">{item[labelKey]}</p>
+                <p className="text-xs capitalize text-gray-500 mt-1">{item.student_level}</p>
+              </div>
+            </Link>
+          </li>
+        ))}
+      </ul>
+      <Link
+        href={`/${type}`}
+        className="mt-4 inline-block text-sm text-blue-600 font-medium hover:underline"
+      >
+        View all {title.toLowerCase()} &rarr;
+      </Link>
     </div>
-  );
+  )
 }
