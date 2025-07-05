@@ -72,25 +72,39 @@ export default function HomePage() {
       <section className="relative rounded-lg overflow-hidden h-96 shadow-lg">
         <video
           className="absolute inset-0 w-full h-full object-cover brightness-75"
-          src="https://cdn.pixabay.com/video/2023/03/09/156110-810025544_large.mp4"
+          src="/video.mp4"
           autoPlay
           muted
           loop
           playsInline
         />
-        <div className="relative z-10 flex flex-col justify-center items-center h-full text-white text-center px-4">
-          <h1 className="text-4xl md:text-5xl font-bold drop-shadow-md max-w-3xl text-black">
-            Discover Your Next Opportunity with ScholarsPoint 🎓
-          </h1>
-          <p className="mt-4 text-lg text-black max-w-xl drop-shadow">
-            Scholarships, Internships & Fellowships for Students Worldwide.
-          </p>
-          <Link
-            href="/scholarships"
-            className="mt-6 bg-blue-600 hover:bg-blue-700 transition-colors text-white font-semibold py-3 px-6 rounded-lg shadow-md"
-          >
-            Browse Scholarships
-          </Link>
+       <div className="relative z-10 flex flex-col justify-center items-center h-full px-4">
+  <div className="bg-white/60 p-4 md:p-8 rounded-xl text-center shadow-lg max-w-3xl w-full">
+    <h1 className="text-2xl sm:text-3xl md:text-5xl font-bold text-black">
+      Discover Your Next Opportunity with ScholarsPoint 🎓
+    </h1>
+    <p className="mt-4 text-base sm:text-lg text-black">
+      Scholarships, Internships & Fellowships for Students Worldwide.
+    </p>
+    <Link
+      href="/scholarships"
+      className="mt-6 inline-block bg-blue-600 hover:bg-blue-700 transition-colors text-white font-semibold py-3 px-6 rounded-lg shadow-md"
+    >
+      Browse Scholarships
+    </Link>
+  </div>
+</div>
+
+      </section>
+
+
+      {/* Featured Opportunities */}
+      <section>
+        <h2 className="text-3xl font-bold mb-8 text-center">Featured Opportunities</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
+          <OpportunityList title="Scholarships" data={scholarships} type="scholarships" labelKey="organization" />
+          <OpportunityList title="Internships" data={internships} type="internships" labelKey="company" />
+          <OpportunityList title="Fellowships" data={fellowships} type="fellowships" labelKey="organization" />
         </div>
       </section>
 
@@ -109,16 +123,6 @@ export default function HomePage() {
             priority={index === 0}
           />
         ))}
-      </section>
-
-      {/* Featured Opportunities */}
-      <section>
-        <h2 className="text-3xl font-bold mb-8 text-center">Featured Opportunities</h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-10">
-          <OpportunityList title="Scholarships" data={scholarships} type="scholarships" labelKey="organization" />
-          <OpportunityList title="Internships" data={internships} type="internships" labelKey="company" />
-          <OpportunityList title="Fellowships" data={fellowships} type="fellowships" labelKey="organization" />
-        </div>
       </section>
     </main>
   )
