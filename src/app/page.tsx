@@ -79,11 +79,11 @@ export default function HomePage() {
           playsInline
         />
        <div className="relative z-10 flex flex-col justify-center items-center h-full px-4">
-  <div className="bg-white/60 p-4 md:p-8 rounded-xl text-center shadow-lg max-w-3xl w-full">
-    <h1 className="text-2xl sm:text-3xl md:text-5xl font-bold text-black">
+  <div className="bg-white/0 p-4 md:p-8 rounded-xl text-center shadow-lg max-w-3xl w-full">
+    <h1 className="text-2xl sm:text-3xl md:text-5xl font-bold text-white">
       Discover Your Next Opportunity with ScholarsPoint 🎓
     </h1>
-    <p className="mt-4 text-base sm:text-lg text-black">
+    <p className="mt-4 text-base sm:text-lg text-white">
       Scholarships, Internships & Fellowships for Students Worldwide.
     </p>
     <Link
