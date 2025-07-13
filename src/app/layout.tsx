@@ -10,14 +10,14 @@ import { Footer } from '@/components/footer'
 const inter = Inter({ subsets: ['latin'], display: 'swap' })
 
 export const metadata: Metadata = {
-  title: ' ScholarsPoint',
+  title: 'ScholarsPoint - Global Scholarships & Internships Platform',
   description:
     'Explore top Scholarships, Internships, Fellowships, and Visa Guidance for students worldwide. Stay updated and apply faster!',
   openGraph: {
-    title: '🎓 ScholarsPoint',
+    title: '🎓 ScholarsPoint - Scholarships, Internships & More',
     description:
       'Explore top Scholarships, Internships, Fellowships, and Visa Guidance for students worldwide.',
-    url: 'https://scholarspoint.vercel.app', // ✅ Replace with your actual URL
+    url: 'https://scholarspoint.net',
     siteName: 'ScholarsPoint',
     locale: 'en_US',
     type: 'website',
@@ -38,30 +38,49 @@ export const metadata: Metadata = {
     'scholarships',
     'fellowships',
     'internships',
-    'visa guide',
-    'international students',
+    'visa guidance',
     'study abroad',
-    'PhD scholarships',
-    'graduate funding',
     'fully funded',
+    'international students',
+    'scholarspoint',
+    'scholarspoint.net',
   ],
-  metadataBase: new URL('https://scholarspoint.vercel.app'),
+  metadataBase: new URL('https://scholarspoint.net'),
 }
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className="scroll-smooth">
       <head>
-        {/* Additional meta tags */}
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <meta charSet="UTF-8" />
         <meta name="theme-color" content="#1d4ed8" />
+        <link rel="canonical" href="https://scholarspoint.net" />
+
+        {/* JSON-LD Structured Data for Google */}
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              "name": "ScholarsPoint",
+              "url": "https://scholarspoint.net",
+              "logo": "https://scholarspoint.net/favicon.png",
+              "sameAs": [
+                "https://www.linkedin.com/company/scholars-point/",
+                "https://twitter.com/scholarspoint"
+              ]
+            }),
+          }}
+        ></script>
       </head>
       <body className={`${inter.className} bg-white text-gray-900 antialiased`}>
         <Toaster richColors position="top-center" />
         <Navbar />
         <main
           role="main"
+          id="main-content"
           className="min-h-screen max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
         >
           {children}
