@@ -1,0 +1,9 @@
+# *
+User-agent: *
+Allow: /
+
+# Host
+Host: https://scholarspoint.net
+
+# Sitemaps
+Sitemap: https://scholarspoint.net/sitemap.xml
