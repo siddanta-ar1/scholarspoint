@@ -17,6 +17,8 @@ export default function Metadata() {
       <meta property="og:url" content="https://scholarspoint.net" />
       <meta property="og:type" content="website" />
       <link rel="canonical" href="https://scholarspoint.net" />
+      {/* Google Site Verification Meta Tag */}
+      <meta name="google-site-verification" content="OSw3ARsfxcZGSRhPnc4vdDvnld5a95kIvjikK-ZJFj0" />
     </Head>
   )
 }
