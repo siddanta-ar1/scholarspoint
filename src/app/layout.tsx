@@ -2,7 +2,7 @@
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import '@/styles/globals.css'
-
+import { Analytics } from "@vercel/analytics/next"
 import { Toaster } from 'sonner'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
@@ -86,6 +86,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {children}
         </main>
         <Footer />
+        <Analytics/>
       </body>
     </html>
   )
