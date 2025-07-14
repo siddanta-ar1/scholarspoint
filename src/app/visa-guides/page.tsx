@@ -1,9 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabaseClient'
 import Link from 'next/link'
 import Image from 'next/image'
+import { supabase } from '@/lib/supabaseClient'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Loader2 } from 'lucide-react'
@@ -24,16 +24,14 @@ export default function VisaGuidesPage() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    async function fetchGuides() {
+    const fetchGuides = async () => {
       const { data, error } = await supabase.from('visa_guides').select('*')
-
-      if (error) {
-        console.error('Error fetching visa guides:', error)
-      } else if (data) {
+      if (!error && data) {
         setGuides(data)
         setFiltered(data)
+      } else {
+        console.error('Error fetching visa guides:', error)
       }
-
       setLoading(false)
     }
 
@@ -57,17 +55,17 @@ export default function VisaGuidesPage() {
   }, [countryFilter, visaTypeFilter, guides])
 
   return (
-    <main className="max-w-7xl mx-auto px-4 py-10 space-y-8">
+    <main className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-10 space-y-10">
       {/* Header */}
-      <header className="text-center space-y-2">
+      <header className="text-center space-y-3">
         <h1 className="text-4xl font-extrabold text-primary">Visa Guides</h1>
-        <p className="text-muted-foreground max-w-xl mx-auto">
+        <p className="text-muted-foreground max-w-2xl mx-auto text-base md:text-lg">
           Explore detailed visa guides categorized by country and visa type.
         </p>
       </header>
 
       {/* Filters */}
-      <section className="flex flex-col md:flex-row gap-4 justify-center md:justify-start">
+      <section className="flex flex-col md:flex-row gap-4 justify-between">
         <Input
           placeholder="Filter by country"
           value={countryFilter}
@@ -82,41 +80,45 @@ export default function VisaGuidesPage() {
         />
       </section>
 
-      {/* Visa Guide Listings */}
+      {/* Listings */}
       <section>
         {loading ? (
-          <div className="flex justify-center py-20">
-            <Loader2 className="animate-spin w-10 h-10 text-primary" />
+          <div className="flex justify-center py-16">
+            <Loader2 className="animate-spin w-8 h-8 text-primary" />
           </div>
-        ) : filtered.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        ) : filtered.length === 0 ? (
+          <p className="text-center text-gray-500 text-lg">No visa guides found for selected filters.</p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {filtered.map((guide) => (
               <Link href={`/visa-guides/${guide.id}`} key={guide.id}>
-                <Card className="cursor-pointer hover:shadow-lg transition-shadow border border-gray-200 rounded-xl overflow-hidden bg-white dark:bg-gray-900">
+                <Card
+                  className="group rounded-2xl overflow-hidden border border-gray-200 dark:border-neutral-700 shadow-md 
+                  hover:shadow-xl hover:border-primary/40 transition duration-300 ease-in-out transform hover:scale-[1.02] 
+                  bg-white dark:bg-neutral-900 cursor-pointer max-w-[400px] mx-auto"
+                >
                   {guide.image_url && (
-                    <Image
-                      src={guide.image_url}
-                      alt={guide.title}
-                      width={400}
-                      height={200}
-                      className="w-full h-48 object-cover"
-                    />
+                    <div className="relative h-48 w-full overflow-hidden">
+                      <Image
+                        src={guide.image_url}
+                        alt={guide.title}
+                        fill
+                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                    </div>
                   )}
                   <CardContent className="p-5 space-y-2">
-                    <h2 className="text-xl font-semibold text-gray-900 dark:text-white line-clamp-2">
+                    <h2 className="text-xl font-semibold line-clamp-2 text-primary group-hover:text-blue-600 transition-colors duration-200">
                       {guide.title}
                     </h2>
-                    <p className="text-sm text-muted-foreground">
-                      {guide.country} ·{' '}
-                      <span className="capitalize">{guide.visa_type}</span>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      📍 {guide.country} · 🛂 {guide.visa_type}
                     </p>
                   </CardContent>
                 </Card>
               </Link>
             ))}
           </div>
-        ) : (
-          <p className="text-center text-gray-500 text-lg">No visa guides found for selected filters.</p>
         )}
       </section>
     </main>

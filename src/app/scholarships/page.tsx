@@ -66,10 +66,11 @@ export default function ScholarshipsPage() {
   }, [country, level, field, scholarships])
 
   return (
-    <main className="max-w-7xl mx-auto px-4 py-10 space-y-8">
-      <section className="text-center space-y-2">
+    <main className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-10 space-y-10">
+      {/* Header */}
+      <section className="text-center space-y-3">
         <h1 className="text-4xl font-extrabold text-primary">Scholarship Opportunities</h1>
-        <p className="text-muted-foreground max-w-2xl mx-auto">
+        <p className="text-muted-foreground max-w-2xl mx-auto text-base md:text-lg">
           Explore fully-funded, merit-based, and international scholarships tailored to your field and level.
         </p>
       </section>
@@ -108,39 +109,44 @@ export default function ScholarshipsPage() {
             <Loader2 className="animate-spin text-primary w-6 h-6" />
           </div>
         ) : filtered.length === 0 ? (
-          <p className="text-center text-gray-500">No scholarships found for selected filters.</p>
+          <p className="text-center text-gray-500 text-lg">No scholarships found for selected filters.</p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
             {filtered.map((scholarship) => (
               <Link href={`/scholarships/${scholarship.id}`} key={scholarship.id}>
-                <Card className="hover:shadow-lg transition-shadow border border-black bg-white dark:bg-gray-900 dark:border-gray-800 rounded-xl overflow-hidden">
+                <Card
+                  className="max-w-[400px] mx-auto group rounded-2xl overflow-hidden border border-gray-200 dark:border-neutral-700 shadow-md 
+                  hover:shadow-xl hover:border-primary/40 transition duration-300 ease-in-out transform hover:scale-[1.02] 
+                  bg-white dark:bg-neutral-900 cursor-pointer"
+                >
                   {scholarship.image_url && (
-                    <Image
-                      src={scholarship.image_url}
-                      alt={scholarship.title}
-                      width={400}
-                      height={200}
-                      className="w-full h-48 object-cover"
-                    />
+                    <div className="relative h-48 w-full overflow-hidden">
+                      <Image
+                        src={scholarship.image_url}
+                        alt={scholarship.title}
+                        fill
+                        className="object-cover transition-transform duration-300 group-hover:scale-105"
+                      />
+                    </div>
                   )}
-                  <CardContent className="p-4 space-y-2">
-                    <h2 className="text-lg font-semibold line-clamp-2 text-gray-900 dark:text-white">
+                  <CardContent className="p-5 space-y-2">
+                    <h2 className="text-xl font-semibold line-clamp-2 text-primary group-hover:text-blue-600 transition-colors duration-200">
                       {scholarship.title}
                     </h2>
                     <p className="text-sm text-muted-foreground dark:text-gray-400">{scholarship.organization}</p>
                     <div className="text-sm text-gray-700 dark:text-gray-300 space-y-1">
                       <p>
-                        <span className="font-medium">Country:</span> {scholarship.country}
+                        <span className="font-medium">📍 Country:</span> {scholarship.country}
                       </p>
                       <p>
-                        <span className="font-medium">Deadline:</span>{' '}
+                        <span className="font-medium">⏳ Deadline:</span>{' '}
                         <span className="text-red-600 dark:text-red-400">{scholarship.deadline}</span>
                       </p>
                       <p>
-                        <span className="font-medium">Level:</span> {scholarship.student_level}
+                        <span className="font-medium">🎓 Level:</span> {scholarship.student_level}
                       </p>
                       <p>
-                        <span className="font-medium">Field:</span> {scholarship.field_of_study}
+                        <span className="font-medium">📚 Field:</span> {scholarship.field_of_study}
                       </p>
                     </div>
                   </CardContent>

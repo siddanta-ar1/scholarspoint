@@ -1,9 +1,9 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabaseClient'
 import Link from 'next/link'
 import Image from 'next/image'
+import { supabase } from '@/lib/supabaseClient'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import {
@@ -68,10 +68,11 @@ export default function FellowshipListPage() {
   }, [country, level, field, fellowships])
 
   return (
-    <main className="max-w-7xl mx-auto px-4 py-10 space-y-8">
+    <main className="max-w-7xl mx-auto px-4 py-10 space-y-10">
+      {/* Header */}
       <section className="text-center space-y-3">
-        <h1 className="text-4xl font-extrabold text-primary">Fellowship Opportunities</h1>
-        <p className="text-muted-foreground max-w-2xl mx-auto">
+        <h1 className="text-4xl md:text-5xl font-extrabold text-primary">Fellowship Opportunities</h1>
+        <p className="text-muted-foreground max-w-2xl mx-auto text-base md:text-lg">
           Discover prestigious fellowships that can advance your career and research worldwide.
         </p>
       </section>
@@ -115,29 +116,37 @@ export default function FellowshipListPage() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {filtered.map((fellowship) => (
               <Link href={`/fellowships/${fellowship.id}`} key={fellowship.id}>
-                <Card className="rounded-xl overflow-hidden border border-gray-200 shadow-sm hover:shadow-md transition">
+                <Card
+                  className="group rounded-2xl overflow-hidden border border-gray-200 dark:border-neutral-700 shadow-md 
+                  hover:shadow-xl hover:border-primary/40 transition duration-300 ease-in-out transform hover:scale-[1.02] 
+                  bg-white dark:bg-neutral-900"
+                >
                   {fellowship.image_url && (
-                    <div className="relative h-40 w-full">
+                    <div className="relative h-40 w-full overflow-hidden">
                       <Image
                         src={fellowship.image_url}
                         alt={fellowship.title}
                         fill
-                        className="object-cover"
+                        className="object-cover transition-transform duration-300 group-hover:scale-105"
                       />
                     </div>
                   )}
-                  <CardContent className="p-4 space-y-2">
-                    <h2 className="font-semibold text-lg line-clamp-2 text-primary">
+                  <CardContent className="p-5 space-y-2">
+                    <h2 className="font-semibold text-lg md:text-xl text-primary group-hover:text-blue-600 transition-colors duration-200 line-clamp-2">
                       {fellowship.title}
                     </h2>
                     <p className="text-sm text-muted-foreground">{fellowship.organization}</p>
-                    <p className="text-sm font-medium text-gray-700">Amount: {fellowship.amount}</p>
-                    <p className="text-sm text-red-600 font-semibold">Deadline: {fellowship.deadline}</p>
-                    <p className="text-sm text-gray-600 capitalize">
-                      Field: {fellowship.field_of_study} · {fellowship.student_level}
+                    <p className="text-sm font-medium text-gray-800 dark:text-gray-300">
+                      💰 <span className="font-semibold">Amount:</span> <span className="text-green-600">{fellowship.amount}</span>
+                    </p>
+                    <p className="text-sm text-red-600 font-semibold">
+                      ⏳ Deadline: {fellowship.deadline}
+                    </p>
+                    <p className="text-sm text-gray-700 dark:text-gray-400 capitalize">
+                      📚 Field: {fellowship.field_of_study} · 🎓 {fellowship.student_level}
                     </p>
                     {fellowship.country && (
-                      <p className="text-sm text-gray-500">Country: {fellowship.country}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">📍 Country: {fellowship.country}</p>
                     )}
                   </CardContent>
                 </Card>
