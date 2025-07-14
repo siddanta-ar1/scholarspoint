@@ -1,4 +1,4 @@
-'use client' // This is correctly placed at the very top.
+'use client' 
 
 import Link from 'next/link'
 import {
@@ -10,14 +10,11 @@ import {
 } from 'lucide-react'
 
 export function Footer() {
-  // `new Date().getFullYear()` can run on both client and server.
-  // If this component ever needed client-side state, effects, or browser APIs,
-  // the 'use client' directive would be essential. For a footer, it's a common
-  // practice to allow for future interactivity.
+
   const year = new Date().getFullYear()
 
   return (
-    <footer className="bg-gray-50 border-t mt-10 text-gray-700">
+    <footer className="bg-gray-50 border-t mt-3 text-gray-700">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
           {/* ScholarsPoint Brand */}

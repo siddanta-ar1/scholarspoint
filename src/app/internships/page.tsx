@@ -79,31 +79,51 @@ export default function InternshipsPage() {
       </section>
 
       {/* Filters */}
-      <section className="flex flex-col md:flex-row gap-4 justify-between">
-        <Input
-          placeholder="Filter by country or company"
-          value={country}
-          onChange={(e) => setCountry(e.target.value)}
-          className="w-full md:max-w-sm"
-        />
-        <Select onValueChange={setLevel}>
-          <SelectTrigger className="w-full md:max-w-sm">
-            <SelectValue placeholder="Student Level" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="undergraduate">Undergraduate</SelectItem>
-            <SelectItem value="graduate">Graduate</SelectItem>
-            <SelectItem value="phd">PhD</SelectItem>
-            <SelectItem value="all">All Levels</SelectItem>
-          </SelectContent>
-        </Select>
-        <Input
-          placeholder="Field of study"
-          value={field}
-          onChange={(e) => setField(e.target.value)}
-          className="w-full md:max-w-sm"
-        />
-      </section>
+      <section className="flex flex-wrap gap-4 justify-start">
+  {/* Country or Company Input */}
+  <div className="w-full sm:w-[calc(33.333%-0.75rem)]">
+    <Input
+      placeholder="🌍 Filter by country or company"
+      value={country}
+      onChange={(e) => setCountry(e.target.value)}
+      className="w-full rounded-xl px-4 py-2 shadow-sm border border-gray-300 dark:border-neutral-700
+        focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary hover:shadow-md
+        transition-all duration-200 bg-white dark:bg-neutral-900 text-sm md:text-base"
+    />
+  </div>
+
+  {/* Student Level Select */}
+  <div className="w-full sm:w-[calc(33.333%-0.75rem)]">
+    <Select onValueChange={setLevel}>
+      <SelectTrigger
+        className="w-full rounded-xl px-4 py-2 shadow-sm border border-gray-300 dark:border-neutral-700
+          focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary hover:shadow-md
+          transition-all duration-200 bg-white dark:bg-neutral-900 text-sm md:text-base"
+      >
+        <SelectValue placeholder="🎓 Student Level" />
+      </SelectTrigger>
+      <SelectContent>
+        <SelectItem value="undergraduate">Undergraduate</SelectItem>
+        <SelectItem value="graduate">Graduate</SelectItem>
+        <SelectItem value="phd">PhD</SelectItem>
+        <SelectItem value="all">All Levels</SelectItem>
+      </SelectContent>
+    </Select>
+  </div>
+
+  {/* Field of Study Input */}
+  <div className="w-full sm:w-[calc(33.333%-0.75rem)]">
+    <Input
+      placeholder="📚 Field of study"
+      value={field}
+      onChange={(e) => setField(e.target.value)}
+      className="w-full rounded-xl px-4 py-2 shadow-sm border border-gray-300 dark:border-neutral-700
+        focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary hover:shadow-md
+        transition-all duration-200 bg-white dark:bg-neutral-900 text-sm md:text-base"
+    />
+  </div>
+</section>
+
 
       {/* Listings */}
       <section>
@@ -114,14 +134,13 @@ export default function InternshipsPage() {
         ) : filtered.length === 0 ? (
           <p className="text-center text-gray-500 text-lg">No internships found for selected filters.</p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 items-stretch">
             {filtered.map((internship) => (
               <Link href={`/internships/${internship.id}`} key={internship.id}>
-                <Card
-                  className="max-w-[400px] mx-auto group rounded-2xl overflow-hidden border border-gray-200 dark:border-neutral-700 shadow-md 
+                <Card className="h-full flex flex-col max-w-[400px] mx-auto group rounded-2xl overflow-hidden border border-gray-200 dark:border-neutral-700 shadow-md 
                   hover:shadow-xl hover:border-primary/40 transition duration-300 ease-in-out transform hover:scale-[1.02] 
-                  bg-white dark:bg-neutral-900 cursor-pointer"
-                >
+                  bg-white dark:bg-neutral-900 cursor-pointer">
+                  
                   {internship.image_url && (
                     <div className="relative h-48 w-full overflow-hidden">
                       <Image
@@ -132,12 +151,15 @@ export default function InternshipsPage() {
                       />
                     </div>
                   )}
-                  <CardContent className="p-5 space-y-2">
+
+                  <CardContent className="flex flex-col flex-grow p-5 space-y-2">
                     <h2 className="text-xl font-semibold line-clamp-2 text-primary group-hover:text-blue-600 transition-colors duration-200">
                       {internship.title}
                     </h2>
                     <p className="text-sm text-muted-foreground dark:text-gray-400">{internship.company}</p>
-                    <p className="text-sm text-red-600 font-medium dark:text-red-400">Deadline: {internship.deadline}</p>
+                    <p className="text-sm text-red-600 font-medium dark:text-red-400">
+                      Deadline: {internship.deadline}
+                    </p>
                     <p className="text-sm text-gray-700 dark:text-gray-400">Level: {internship.student_level}</p>
                     <p className="text-sm text-gray-700 dark:text-gray-400">Country: {internship.country || 'N/A'}</p>
                     {internship.field_of_study && (
