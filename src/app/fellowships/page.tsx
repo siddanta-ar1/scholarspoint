@@ -60,7 +60,8 @@ export default function FellowshipListPage() {
       return (
         (country ? (item.country?.toLowerCase() || '').includes(country.toLowerCase()) : true) &&
         (level && level !== 'all' ? item.student_level === level : true) &&
-        (field ? item.field_of_study.toLowerCase().includes(field.toLowerCase()) : true)
+(field ? (item.field_of_study?.toLowerCase() || '').includes(field.toLowerCase()) : true)
+
       )
     })
 
