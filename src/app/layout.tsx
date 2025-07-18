@@ -32,7 +32,7 @@ export const metadata: Metadata = {
   icons: {
     icon: '/favicon.png',
     shortcut: '/favicon.png',
-    apple: '/apple-touch-icon.png',
+    apple: '/apple-touch-icon.jpeg',
   },
   keywords: [
     'scholarships',
@@ -68,8 +68,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               "url": "https://scholarspoint.net",
               "logo": "https://scholarspoint.net/favicon.png",
               "sameAs": [
-                "https://www.linkedin.com/company/scholars-point/",
-                "https://twitter.com/scholarspoint"
+                " https://www.facebook.com/scholars.point.133274",
+              "https://www.instagram.com/scholarspoint3/", 
+              "https://www.tiktok.com/@scholars_point",
+              "https://www.linkedin.com/in/siddanta-sodari-08596a335/"
               ]
             }),
           }}
