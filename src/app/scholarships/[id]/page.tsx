@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import { Loader2 } from 'lucide-react'
 import Image from 'next/image'
+import Link from 'next/link'
 
 type Scholarship = {
   id: string
@@ -22,12 +23,14 @@ type Scholarship = {
   field_of_study: string
   student_level: string
   image_url?: string
+  is_active: boolean
 }
 
 export default function ScholarshipDetailPage() {
   const { id } = useParams()
   const [scholarship, setScholarship] = useState<Scholarship | null>(null)
   const [loading, setLoading] = useState(true)
+  const [deadlinePassed, setDeadlinePassed] = useState(false)
 
   useEffect(() => {
     const fetchScholarship = async () => {
@@ -40,8 +43,24 @@ export default function ScholarshipDetailPage() {
       if (error) {
         toast.error('Scholarship not found')
         setScholarship(null)
-      } else {
-        setScholarship(data)
+        setLoading(false)
+        return
+      }
+
+      setScholarship(data)
+      
+      // Check if deadline has passed
+      if (data.deadline) {
+        const deadlineDate = new Date(data.deadline)
+        const today = new Date()
+        if (deadlineDate < today) {
+          setDeadlinePassed(true)
+        }
+      }
+      
+      // Check if scholarship is inactive
+      if (data.is_active === false) {
+        setDeadlinePassed(true)
       }
 
       setLoading(false)
@@ -50,19 +69,38 @@ export default function ScholarshipDetailPage() {
     if (id) fetchScholarship()
   }, [id])
 
-  if (loading)
+  if (loading) {
     return (
       <div className="flex justify-center items-center h-40">
         <Loader2 className="w-6 h-6 animate-spin text-primary" />
       </div>
     )
+  }
 
-  if (!scholarship)
+  if (!scholarship) {
     return (
       <p className="text-center py-10 text-red-500 font-medium">
         Scholarship not found.
       </p>
     )
+  }
+
+  if (deadlinePassed) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 py-10 text-center">
+        <h1 className="text-3xl font-bold text-red-600 mb-4">This Scholarship Has Expired</h1>
+        <p className="text-lg text-gray-700 mb-6">
+          The deadline for {scholarship.title} by {scholarship.organization} has passed.
+        </p>
+        <p className="text-gray-600">
+          Check out our current scholarship opportunities for new applications.
+        </p>
+        <Button className="mt-6" asChild>
+          <Link href="/scholarships">View Active Scholarships</Link>
+        </Button>
+      </div>
+    )
+  }
 
   return (
     <main className="max-w-4xl mx-auto px-4 py-10 space-y-8">

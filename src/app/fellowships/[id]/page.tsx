@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import { Loader2 } from 'lucide-react'
 import Image from 'next/image'
+import Link from 'next/link'
 
 type Fellowship = {
   id: string
@@ -21,12 +22,14 @@ type Fellowship = {
   image_url?: string
   requirements?: string[]
   application_url: string
+  is_active: boolean
 }
 
 export default function FellowshipDetail() {
   const { id } = useParams()
   const [fellowship, setFellowship] = useState<Fellowship | null>(null)
   const [loading, setLoading] = useState(true)
+  const [deadlinePassed, setDeadlinePassed] = useState(false)
 
   useEffect(() => {
     const fetchFellowship = async () => {
@@ -38,9 +41,26 @@ export default function FellowshipDetail() {
 
       if (error) {
         toast.error('Fellowship not found.')
-      } else {
-        setFellowship(data)
+        setLoading(false)
+        return
       }
+
+      setFellowship(data)
+      
+      // Check if deadline has passed
+      if (data.deadline) {
+        const deadlineDate = new Date(data.deadline)
+        const today = new Date()
+        if (deadlineDate < today) {
+          setDeadlinePassed(true)
+        }
+      }
+      
+      // Check if fellowship is inactive
+      if (data.is_active === false) {
+        setDeadlinePassed(true)
+      }
+
       setLoading(false)
     }
 
@@ -58,6 +78,23 @@ export default function FellowshipDetail() {
   if (!fellowship) {
     return (
       <p className="text-center py-10 text-red-600 font-semibold">Fellowship not found.</p>
+    )
+  }
+
+  if (deadlinePassed) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 py-10 text-center">
+        <h1 className="text-3xl font-bold text-red-600 mb-4">This Fellowship Has Expired</h1>
+        <p className="text-lg text-gray-700 mb-6">
+          The deadline for {fellowship.title} by {fellowship.organization} has passed.
+        </p>
+        <p className="text-gray-600">
+          Check out our current fellowship opportunities for new applications.
+        </p>
+        <Button className="mt-6" asChild>
+          <Link href="/fellowships">View Active Fellowships</Link>
+        </Button>
+      </div>
     )
   }
 

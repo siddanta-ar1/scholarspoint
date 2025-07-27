@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import { Loader2 } from 'lucide-react'
 import Image from 'next/image'
+import Link from 'next/link'
 
 interface Internship {
   id: string
@@ -21,12 +22,14 @@ interface Internship {
   image_url?: string
   requirements?: string[]
   application_url: string
+  is_active: boolean
 }
 
 export default function InternshipDetail() {
   const { id } = useParams()
   const [internship, setInternship] = useState<Internship | null>(null)
   const [loading, setLoading] = useState(true)
+  const [deadlinePassed, setDeadlinePassed] = useState(false)
 
   useEffect(() => {
     const fetchInternship = async () => {
@@ -38,8 +41,24 @@ export default function InternshipDetail() {
 
       if (error) {
         toast.error('Internship not found.')
-      } else {
-        setInternship(data)
+        setLoading(false)
+        return
+      }
+
+      setInternship(data)
+      
+      // Check if deadline has passed
+      if (data.deadline) {
+        const deadlineDate = new Date(data.deadline)
+        const today = new Date()
+        if (deadlineDate < today) {
+          setDeadlinePassed(true)
+        }
+      }
+      
+      // Check if internship is inactive
+      if (data.is_active === false) {
+        setDeadlinePassed(true)
       }
 
       setLoading(false)
@@ -61,6 +80,23 @@ export default function InternshipDetail() {
       <p className="text-center py-10 text-red-500 font-medium">
         Internship not found.
       </p>
+    )
+  }
+
+  if (deadlinePassed) {
+    return (
+      <div className="max-w-4xl mx-auto px-4 py-10 text-center">
+        <h1 className="text-3xl font-bold text-red-600 mb-4">This Internship Has Expired</h1>
+        <p className="text-lg text-gray-700 mb-6">
+          The deadline for {internship.title} at {internship.company} has passed.
+        </p>
+        <p className="text-gray-600">
+          Check out our current internship opportunities for new applications.
+        </p>
+        <Button className="mt-6" asChild>
+          <Link href="/internships">View Active Internships</Link>
+        </Button>
+      </div>
     )
   }
 
