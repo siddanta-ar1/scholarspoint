@@ -23,6 +23,10 @@ export default function VisaGuidesPage() {
   const [visaTypeFilter, setVisaTypeFilter] = useState('')
   const [loading, setLoading] = useState(true)
 
+  // For dropdown suggestions
+  const [countrySuggestions, setCountrySuggestions] = useState<string[]>([])
+  const [visaTypeSuggestions, setVisaTypeSuggestions] = useState<string[]>([])
+
   useEffect(() => {
     const fetchGuides = async () => {
       const { data, error } = await supabase.from('visa_guides').select('*')
@@ -38,6 +42,7 @@ export default function VisaGuidesPage() {
     fetchGuides()
   }, [])
 
+  // Filter guides
   useEffect(() => {
     const filteredData = guides.filter((guide) => {
       const matchesCountry = countryFilter
@@ -54,6 +59,32 @@ export default function VisaGuidesPage() {
     setFiltered(filteredData)
   }, [countryFilter, visaTypeFilter, guides])
 
+  // Generate suggestions dynamically
+  useEffect(() => {
+    const uniqueCountries = Array.from(new Set(guides.map((g) => g.country)))
+    const uniqueVisaTypes = Array.from(new Set(guides.map((g) => g.visa_type)))
+
+    if (countryFilter) {
+      setCountrySuggestions(
+        uniqueCountries.filter((c) =>
+          c.toLowerCase().includes(countryFilter.toLowerCase())
+        )
+      )
+    } else {
+      setCountrySuggestions([])
+    }
+
+    if (visaTypeFilter) {
+      setVisaTypeSuggestions(
+        uniqueVisaTypes.filter((v) =>
+          v.toLowerCase().includes(visaTypeFilter.toLowerCase())
+        )
+      )
+    } else {
+      setVisaTypeSuggestions([])
+    }
+  }, [countryFilter, visaTypeFilter, guides])
+
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-10 space-y-10">
       {/* Header */}
@@ -66,28 +97,56 @@ export default function VisaGuidesPage() {
 
       {/* Filters */}
       <section className="flex flex-wrap gap-4 justify-start">
-  <div className="relative w-full sm:w-[calc(50%-0.5rem)]">
-    <Input
-      placeholder="🌍 Filter by country"
-      value={countryFilter}
-      onChange={(e) => setCountryFilter(e.target.value)}
-      className="w-full rounded-xl px-4 py-2 shadow-sm border border-gray-300 dark:border-neutral-700 focus:outline-none 
-        focus:ring-2 focus:ring-primary focus:border-primary hover:shadow-md transition-all duration-200 
-        bg-white dark:bg-neutral-900 text-sm md:text-base"
-    />
-  </div>
-  <div className="relative w-full sm:w-[calc(50%-0.5rem)]">
-    <Input
-      placeholder="🛂 Filter by visa type"
-      value={visaTypeFilter}
-      onChange={(e) => setVisaTypeFilter(e.target.value)}
-      className="w-full rounded-xl px-4 py-2 shadow-sm border border-gray-300 dark:border-neutral-700 focus:outline-none 
-        focus:ring-2 focus:ring-primary focus:border-primary hover:shadow-md transition-all duration-200 
-        bg-white dark:bg-neutral-900 text-sm md:text-base"
-    />
-  </div>
-</section>
+        {/* Country filter with dropdown */}
+        <div className="relative w-full sm:w-[calc(50%-0.5rem)]">
+          <Input
+            placeholder="🌍 Filter by country"
+            value={countryFilter}
+            onChange={(e) => setCountryFilter(e.target.value)}
+            className="w-full rounded-xl px-4 py-2 shadow-sm border border-gray-300 dark:border-neutral-700 
+              focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary hover:shadow-md transition-all 
+              duration-200 bg-white dark:bg-neutral-900 text-sm md:text-base"
+          />
+          {countrySuggestions.length > 0 && (
+            <ul className="absolute z-10 mt-1 w-full bg-white dark:bg-neutral-900 border border-gray-300 dark:border-neutral-700 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+              {countrySuggestions.map((c) => (
+                <li
+                  key={c}
+                  onClick={() => setCountryFilter(c)}
+                  className="px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-neutral-800"
+                >
+                  {c}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
 
+        {/* Visa type filter with dropdown */}
+        <div className="relative w-full sm:w-[calc(50%-0.5rem)]">
+          <Input
+            placeholder="🛂 Filter by visa type"
+            value={visaTypeFilter}
+            onChange={(e) => setVisaTypeFilter(e.target.value)}
+            className="w-full rounded-xl px-4 py-2 shadow-sm border border-gray-300 dark:border-neutral-700 
+              focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary hover:shadow-md transition-all 
+              duration-200 bg-white dark:bg-neutral-900 text-sm md:text-base"
+          />
+          {visaTypeSuggestions.length > 0 && (
+            <ul className="absolute z-10 mt-1 w-full bg-white dark:bg-neutral-900 border border-gray-300 dark:border-neutral-700 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+              {visaTypeSuggestions.map((v) => (
+                <li
+                  key={v}
+                  onClick={() => setVisaTypeFilter(v)}
+                  className="px-4 py-2 cursor-pointer hover:bg-gray-100 dark:hover:bg-neutral-800"
+                >
+                  {v}
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </section>
 
       {/* Listings */}
       <section>
@@ -96,7 +155,9 @@ export default function VisaGuidesPage() {
             <Loader2 className="animate-spin w-8 h-8 text-primary" />
           </div>
         ) : filtered.length === 0 ? (
-          <p className="text-center text-gray-500 text-lg">No visa guides found for selected filters.</p>
+          <p className="text-center text-gray-500 text-lg">
+            No visa guides found for selected filters.
+          </p>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6 items-stretch">
             {filtered.map((guide) => (
