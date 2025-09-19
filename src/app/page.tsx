@@ -3,7 +3,7 @@
 
 import HeroSection from '@/components/HeroSection'
 import Metadata from '@/components/Metadata'
-import MobileSlideshow from '@/components/MobileSlideShow'
+// import MobileSlideshow from '@/components/MobileSlideShow'
 import OpportunityList from '@/components/OpportunityList'
 import { fetchOpportunities } from '@/lib/fetchOpportunities'
 import { useEffect, useState } from 'react'
@@ -53,7 +53,7 @@ const [data, setData] = useState<OpportunityData>({
           </div>
         </section>
 
-        <MobileSlideshow />
+        {/* <MobileSlideshow /> */}
       </main>
     </>
   )
