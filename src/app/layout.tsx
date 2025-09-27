@@ -45,7 +45,6 @@ Let ScholarsPoint guide you through every step of your journey—from finding th
   icons: {
     icon: '/favicon.png',
     shortcut: '/favicon.png',
-    apple: '/apple-touch-icon.jpeg',
   },
  keywords : [
     // --- Scholarships ---

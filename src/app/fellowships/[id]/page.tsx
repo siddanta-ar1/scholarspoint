@@ -205,7 +205,7 @@ export default function FellowshipDetail() {
               <BookOpen size={24} className="text-primary-dark" /> Focus Areas
             </h2>
             <div className="flex flex-wrap gap-2">
-                {fellowship.focus_areas.map((area, idx) => <Badge key={idx} variant="outline" className="text-gray-700 bg-secondary/20 border-secondary/40">{area}</Badge>)} {/* Updated badge styling */}
+                {fellowship.focus_areas.map((area, idx) => <Badge key={idx} variant="outline" className="bg-blue-100 text-blue-800 hover:bg-blue-200">{area}</Badge>)} {/* Updated badge styling */}
             </div>
           </section>
         )}
@@ -260,7 +260,7 @@ export default function FellowshipDetail() {
 
       {/* --- Apply Button Section --- */}
       <section className="text-center pt-6 border-t border-border">
-          <Button asChild size="lg" className="w-full sm:w-auto font-bold text-lg bg-primary hover:bg-primary/90 text-primary-foreground shadow-md">
+          <Button asChild size="lg" className="mt-6 bg-blue-600 hover:bg-blue-700 text-white">
             <a href={fellowship.application_url} target="_blank" rel="noopener noreferrer">
               Apply Now
             </a>
