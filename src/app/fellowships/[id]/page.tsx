@@ -15,13 +15,12 @@ import {
   CheckCircle2,
   MapPin,
   BookOpen,
-  ClipboardList, // New icon for requirements/criteria
-  Globe // New icon for countries
+  ClipboardList,
+  Globe
 } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 
-// (Fellowship Type definition remains the same)
 type Fellowship = {
   id: string
   title: string
@@ -37,28 +36,25 @@ type Fellowship = {
   application_url: string
   is_active: boolean
   image_url?: string
-  requirements: string[]
-  focus_areas: string[]
-  documents: string[]
-  countries: string[]
-  selection_criteria: string[]
+  requirements: string[] | null // Allow null
+  focus_areas: string[] | null // Allow null
+  documents: string[] | null // Allow null
+  countries: string[] | null // Allow null
+  selection_criteria: string[] | null // Allow null
   metadata: {
     benefits?: string[]
   }
 }
 
-// Helper component for displaying key details with icons
-// Updated to use stronger labels and slightly lighter values for better contrast
 const InfoItem = ({ icon, label, value }: { icon: React.ReactNode, label: string, value: string }) => (
   <div className="flex items-start gap-3">
-    <div className="flex-shrink-0 text-primary-dark mt-1">{icon}</div> {/* Slightly darker primary for icons */}
+    <div className="flex-shrink-0 text-primary-dark mt-1">{icon}</div>
     <div>
       <p className="font-semibold text-gray-800">{label}</p>
-      <p className="text-gray-700 capitalize">{value}</p> {/* Slightly darker for values */}
+      <p className="text-gray-700 capitalize">{value}</p>
     </div>
   </div>
 );
-
 
 export default function FellowshipDetail() {
   const { id } = useParams()
@@ -81,19 +77,22 @@ export default function FellowshipDetail() {
         setLoading(false)
         return
       }
+      
+      if (data) {
+        setFellowship(data);
 
-      setFellowship(data);
-
-      let expired = !data.is_active;
-      if (data.deadline) {
-        const deadlineDate = new Date(data.deadline);
-        const today = new Date();
-        today.setHours(0, 0, 0, 0); 
-        if (deadlineDate < today) {
-          expired = true;
+        let expired = !data.is_active;
+        if (data.deadline) {
+          const deadlineDate = new Date(data.deadline);
+          const today = new Date();
+          today.setHours(0, 0, 0, 0); 
+          if (deadlineDate < today) {
+            expired = true;
+          }
         }
+        setIsExpired(expired);
       }
-      setIsExpired(expired);
+      
       setLoading(false);
     }
 
@@ -113,7 +112,7 @@ export default function FellowshipDetail() {
       <div className="text-center py-10 bg-background min-h-screen">
         <h2 className="text-2xl font-bold text-red-600">Fellowship Not Found</h2>
         <p className="text-gray-600 mt-2">The fellowship you are looking for does not exist or has been removed.</p>
-         <Button className="mt-6 bg-primary hover:bg-primary/90 text-primary-foreground">
+         <Button asChild className="mt-6 bg-primary hover:bg-primary/90 text-primary-foreground">
           <Link href="/fellowships">Browse Fellowships</Link>
         </Button>
       </div>
@@ -130,7 +129,7 @@ export default function FellowshipDetail() {
         <p className="text-gray-600">
           Please check out our other opportunities.
         </p>
-        <Button className="mt-6 bg-primary hover:bg-primary/90 text-primary-foreground">
+        <Button asChild className="mt-6 bg-primary hover:bg-primary/90 text-primary-foreground">
           <Link href="/fellowships">View Active Fellowships</Link>
         </Button>
       </div>
@@ -154,14 +153,14 @@ export default function FellowshipDetail() {
           </div>
         )}
         <div>
-          <h1 className="text-3xl lg:text-4xl font-extrabold text-primary leading-tight">{fellowship.title}</h1> {/* text-primary for title */}
-          <p className="text-muted-foreground text-lg mt-2">{fellowship.organization}</p> {/* text-muted-foreground for organization */}
+          <h1 className="text-3xl lg:text-4xl font-extrabold text-primary leading-tight">{fellowship.title}</h1>
+          <p className="text-muted-foreground text-lg mt-2">{fellowship.organization}</p>
         </div>
       </section>
 
       {/* --- Key Details Section --- */}
-      <section className="p-6 bg-card rounded-lg shadow-sm border border-border"> {/* bg-card for clearer section, subtle shadow */}
-        <h2 className="text-2xl font-bold mb-5 text-gray-900">Key Details</h2> {/* Darker heading */}
+      <section className="p-6 bg-card rounded-lg shadow-sm border border-border">
+        <h2 className="text-2xl font-bold mb-5 text-gray-900">Key Details</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
           <InfoItem icon={<DollarSign size={20} />} label="Amount" value={fellowship.amount} />
           <InfoItem icon={<Clock size={20} />} label="Duration" value={fellowship.duration} />
@@ -191,7 +190,7 @@ export default function FellowshipDetail() {
             <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {fellowship.metadata.benefits.map((benefit, idx) => (
                   <li key={idx} className="flex items-center gap-2 text-gray-700">
-                    <CheckCircle2 className="text-green-500 w-5 h-5 flex-shrink-0" /> {/* Softer green for benefits */}
+                    <CheckCircle2 className="text-green-500 w-5 h-5 flex-shrink-0" />
                     <span className="capitalize">{benefit.replace(/_/g, ' ')}</span>
                   </li>
                 ))}
@@ -205,19 +204,24 @@ export default function FellowshipDetail() {
               <BookOpen size={24} className="text-primary-dark" /> Focus Areas
             </h2>
             <div className="flex flex-wrap gap-2">
-                {fellowship.focus_areas.map((area, idx) => <Badge key={idx} variant="outline" className="bg-blue-100 text-blue-800 hover:bg-blue-200">{area}</Badge>)} {/* Updated badge styling */}
+                {fellowship.focus_areas.map((area, idx) => <Badge key={idx} variant="outline" className="bg-blue-100 text-blue-800 hover:bg-blue-200">{area}</Badge>)}
             </div>
           </section>
         )}
         
+        {/* FIX APPLIED HERE */}
         <section className="p-6 bg-card rounded-lg shadow-sm border border-border">
           <h2 className="text-2xl font-bold mb-3 text-gray-900 flex items-center gap-2">
             <ClipboardList size={24} className="text-primary-dark" /> Eligibility & Requirements
           </h2>
-          <p className="text-gray-700 leading-relaxed mb-4">{fellowship.eligibility}</p>
-          <ul className="list-disc list-inside space-y-2 text-gray-700">
-              {fellowship.requirements.map((req, idx) => <li key={idx}>{req}</li>)}
-          </ul>
+          {fellowship.eligibility && (
+            <p className="text-gray-700 leading-relaxed mb-4">{fellowship.eligibility}</p>
+          )}
+          {fellowship.requirements && fellowship.requirements.length > 0 && (
+            <ul className="list-disc list-inside space-y-2 text-gray-700">
+                {fellowship.requirements.map((req, idx) => <li key={idx}>{req}</li>)}
+            </ul>
+          )}
         </section>
 
         {fellowship.selection_criteria && fellowship.selection_criteria.length > 0 && (
