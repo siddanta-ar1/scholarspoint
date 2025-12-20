@@ -3,10 +3,11 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import Script from 'next/script' // For Schema injection
 import { supabase } from '@/lib/supabaseClient'
 import { Card, CardContent } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
-import { Loader2, X } from 'lucide-react'
+import { Loader2, X, Search, Tag as TagIcon } from 'lucide-react'
 
 /* ----------------------------- Types ----------------------------- */
 type Post = {
@@ -20,7 +21,6 @@ type Post = {
   tags: string[]
 }
 
-/* ------------------------- Helper utilities ------------------------ */
 function useDebouncedValue<T>(value: T, delay = 300) {
   const [debounced, setDebounced] = useState<T>(value)
   useEffect(() => {
@@ -30,25 +30,20 @@ function useDebouncedValue<T>(value: T, delay = 300) {
   return debounced
 }
 
-/* ------------------------- Main Component ------------------------- */
 export default function BlogListPage() {
   const [posts, setPosts] = useState<Post[]>([])
   const [filtered, setFiltered] = useState<Post[]>([])
   const [loading, setLoading] = useState<boolean>(true)
 
-  // Controlled inputs
   const [searchInput, setSearchInput] = useState<string>('')
   const [tagInput, setTagInput] = useState<string>('')
 
-  // Debounced values
   const debouncedSearch = useDebouncedValue(searchInput, 250)
   const debouncedTag = useDebouncedValue(tagInput, 250)
 
-  // Suggestion dropdown state
   const [showTagSuggestions, setShowTagSuggestions] = useState(false)
   const tagRef = useRef<HTMLDivElement | null>(null)
 
-  // Derived unique lists for suggestions
   const uniqueTags = useMemo(() => {
     const set = new Set<string>()
     posts.forEach((p) => {
@@ -57,7 +52,6 @@ export default function BlogListPage() {
     return Array.from(set).sort((a, b) => a.localeCompare(b))
   }, [posts])
 
-  // Fetch posts
   useEffect(() => {
     const fetchPosts = async () => {
       setLoading(true)
@@ -68,9 +62,8 @@ export default function BlogListPage() {
           .eq('is_published', true)
           .order('published_at', { ascending: false })
 
-        if (error) {
-          console.error('Error fetching posts:', error)
-        } else if (data) {
+        if (error) console.error('Error:', error)
+        else if (data) {
           setPosts(data)
           setFiltered(data)
         }
@@ -81,18 +74,6 @@ export default function BlogListPage() {
     fetchPosts()
   }, [])
 
-  // Click outside handlers
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      const target = e.target as Node
-      if (tagRef.current && !tagRef.current.contains(target))
-        setShowTagSuggestions(false)
-    }
-    document.addEventListener('click', handleClickOutside)
-    return () => document.removeEventListener('click', handleClickOutside)
-  }, [])
-
-  // Filtering logic
   useEffect(() => {
     const search = debouncedSearch.trim().toLowerCase()
     const tag = debouncedTag.trim().toLowerCase()
@@ -107,140 +88,169 @@ export default function BlogListPage() {
         : true
       return matchesSearch && matchesTag
     })
-
     setFiltered(result)
   }, [debouncedSearch, debouncedTag, posts])
 
-  const clearFilters = () => {
-    setSearchInput('')
-    setTagInput('')
-  }
+  // Structured Data for SEO (Sitelinks Searchbox & Blog Collection)
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Blog",
+    "name": "ScholarsPoint Blog",
+    "description": "Expert insights on scholarships, fellowships, and global education.",
+    "url": "https://scholarspoint.net/blogs",
+    "blogPost": filtered.map((post) => ({
+      "@type": "BlogPosting",
+      "headline": post.title,
+      "url": `https://scholarspoint.net/blogs/${post.slug}`,
+      "datePublished": post.published_at,
+      "author": { "@type": "Person", "name": post.author_name }
+    }))
+  };
 
-  /* ----------------------------- Render ----------------------------- */
   return (
-    <main className="max-w-7xl mx-auto px-4 py-10 space-y-10">
-      {/* Header */}
-      <section className="text-center space-y-3">
-        <h1 className="text-4xl md:text-5xl font-extrabold text-sky-700">
-          The ScholarsPoint Blog
-        </h1>
-        <p className="text-muted-foreground max-w-2xl mx-auto text-base md:text-lg">
-          Insights, guides, and stories to help you on your academic and
-          professional journey.
-        </p>
-      </section>
+    <>
+      <Script
+        id="blog-schema"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
 
-      {/* Filters */}
-      <section className="flex flex-wrap gap-4 items-start">
-        <Input
-          aria-label="Search by title or author"
-          placeholder="🔍 Search title or author"
-          value={searchInput}
-          onChange={(e) => setSearchInput(e.target.value)}
-          className="w-full sm:w-[calc(50%-0.5rem)] rounded-xl px-4 py-2 shadow-sm border border-gray-300 dark:border-neutral-700 focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-400 hover:shadow-md transition-all duration-200 bg-white dark:bg-neutral-900 text-sm md:text-base"
-        />
-
-        <div ref={tagRef} className="relative w-full sm:w-[calc(50%-0.5rem)]">
-          <Input
-            aria-label="Filter by tag"
-            placeholder="🏷️ Filter by tag"
-            value={tagInput}
-            onChange={(e) => {
-              setTagInput(e.target.value)
-              setShowTagSuggestions(true)
-            }}
-            onFocus={() => setShowTagSuggestions(true)}
-            className="w-full rounded-xl px-4 py-2 shadow-sm border border-gray-300 dark:border-neutral-700 focus:outline-none focus:ring-2 focus:ring-sky-400 focus:border-sky-400 hover:shadow-md transition-all duration-200 bg-white dark:bg-neutral-900 text-sm md:text-base"
-          />
-          {showTagSuggestions && uniqueTags.length > 0 && (
-            <ul className="absolute z-40 mt-2 w-full max-h-48 overflow-auto rounded-xl border border-gray-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-lg">
-              {uniqueTags
-                .filter((t) =>
-                  t.toLowerCase().includes(tagInput.toLowerCase()),
-                )
-                .slice(0, 10)
-                .map((t) => (
-                  <li
-                    key={t}
-                    onMouseDown={(e) => {
-                      e.preventDefault()
-                      setTagInput(t)
-                      setShowTagSuggestions(false)
-                    }}
-                    className="px-4 py-2 cursor-pointer hover:bg-sky-50 dark:hover:bg-sky-900/30 transition-colors"
-                  >
-                    {t}
-                  </li>
-                ))}
-            </ul>
-          )}
-        </div>
-        
-        <div className="w-full text-right">
-             <button
-                type="button"
-                onClick={clearFilters}
-                className="inline-flex items-center gap-2 rounded-xl px-4 py-2 bg-gray-100 dark:bg-neutral-800 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-neutral-700 transition"
-            >
-                <X className="w-4 h-4" />
-                Clear
-            </button>
-        </div>
-      </section>
-
-      {/* Results */}
-      <section>
-        {loading ? (
-          <div className="flex justify-center py-16">
-            <Loader2 className="animate-spin w-8 h-8 text-sky-600" />
-          </div>
-        ) : filtered.length === 0 ? (
-          <p className="text-center text-gray-500 text-lg">
-            No posts found for the selected filters.
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-12">
+        {/* Header Section */}
+        <header className="text-center space-y-4">
+          <h1 className="text-4xl md:text-6xl font-black text-sky-800 tracking-tight">
+            The ScholarsPoint Blog
+          </h1>
+          <p className="text-gray-600 max-w-2xl mx-auto text-lg leading-relaxed">
+            Your ultimate guide to international education, career growth, and global opportunities.
           </p>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
-            {filtered.map((post) => (
-              <Link
-                href={`/blogs/${post.slug}`}
-                key={post.slug}
-                className="no-underline"
+        </header>
+
+        {/* Filters - Improved Accessibility & Design */}
+        <nav aria-label="Blog filters" className="bg-gray-50 dark:bg-neutral-900/50 p-6 rounded-2xl border border-gray-100 dark:border-neutral-800">
+          <div className="flex flex-col md:flex-row gap-4">
+            <div className="relative flex-grow">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Input
+                aria-label="Search articles"
+                placeholder="Search title or author..."
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                className="pl-10 h-12 rounded-xl border-gray-200 focus:ring-sky-500"
+              />
+            </div>
+
+            <div ref={tagRef} className="relative flex-grow">
+              <TagIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Input
+                aria-label="Filter by tag"
+                placeholder="Filter by category..."
+                value={tagInput}
+                onChange={(e) => {
+                  setTagInput(e.target.value)
+                  setShowTagSuggestions(true)
+                }}
+                onFocus={() => setShowTagSuggestions(true)}
+                className="pl-10 h-12 rounded-xl border-gray-200 focus:ring-sky-500"
+              />
+              {showTagSuggestions && uniqueTags.length > 0 && (
+                <ul className="absolute z-50 mt-2 w-full max-h-60 overflow-auto rounded-xl border bg-white shadow-2xl py-2">
+                  {uniqueTags
+                    .filter((t) => t.toLowerCase().includes(tagInput.toLowerCase()))
+                    .map((t) => (
+                      <li
+                        key={t}
+                        onMouseDown={() => {
+                          setTagInput(t)
+                          setShowTagSuggestions(false)
+                        }}
+                        className="px-4 py-2 hover:bg-sky-50 cursor-pointer text-gray-700"
+                      >
+                        {t}
+                      </li>
+                    ))}
+                </ul>
+              )}
+            </div>
+
+            {(searchInput || tagInput) && (
+              <button
+                onClick={() => { setSearchInput(''); setTagInput(''); }}
+                className="h-12 px-6 flex items-center justify-center gap-2 text-red-600 hover:bg-red-50 rounded-xl transition-colors font-medium"
               >
-                <Card className="h-full flex flex-col max-w-[400px] mx-auto group rounded-2xl overflow-hidden border border-gray-200 dark:border-neutral-700 shadow-md hover:shadow-xl hover:border-sky-300 transition duration-300 ease-in-out transform hover:scale-[1.02] bg-white dark:bg-neutral-900 cursor-pointer">
-                  {post.image_url ? (
-                    <div className="relative h-40 w-full overflow-hidden">
-                      <Image
-                        src={post.image_url}
-                        alt={post.title}
-                        fill
-                        sizes="(max-width: 640px) 100vw, 400px"
-                        className="object-cover transition-transform duration-300 group-hover:scale-105"
-                      />
-                    </div>
-                  ) : (
-                    <div className="w-full h-40 grid place-items-center bg-sky-50 dark:bg-sky-900 text-sky-700 dark:text-sky-200">
-                      <span className="font-semibold">No image</span>
-                    </div>
-                  )}
-                  <CardContent className="flex flex-col flex-grow p-5 space-y-2">
-                    <h2 className="font-semibold text-lg md:text-xl text-sky-700 group-hover:text-sky-600 transition-colors duration-200 line-clamp-2">
-                      {post.title}
-                    </h2>
-                    <p className="text-sm text-muted-foreground line-clamp-3">
-                        {post.excerpt}
-                    </p>
-                     <div className='!mt-auto pt-2'>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">
-                           By {post.author_name} • {new Date(post.published_at).toLocaleDateString('en-US', {dateStyle: 'medium'})}
-                        </p>
-                     </div>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
+                <X className="w-4 h-4" /> Clear
+              </button>
+            )}
           </div>
-        )}
-      </section>
-    </main>
+        </nav>
+
+        {/* Results Section */}
+        <section aria-live="polite">
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-24 space-y-4">
+              <Loader2 className="animate-spin w-10 h-10 text-sky-600" />
+              <p className="text-gray-500 font-medium">Fetching latest insights...</p>
+            </div>
+          ) : filtered.length === 0 ? (
+            <div className="text-center py-20 bg-gray-50 rounded-3xl border-2 border-dashed">
+              <p className="text-xl text-gray-500">No matches found for your search.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+              {filtered.map((post, index) => (
+                <article key={post.id} className="group">
+                  <Link href={`/blogs/${post.slug}`} className="block h-full">
+                    <Card className="h-full flex flex-col overflow-hidden border-none shadow-sm hover:shadow-2xl transition-all duration-500 rounded-2xl bg-white dark:bg-neutral-900 border border-gray-100 dark:border-neutral-800">
+                      {/* Image Container with Aspect Ratio fix */}
+                      <div className="relative aspect-[16/9] w-full overflow-hidden">
+                        {post.image_url ? (
+                          <Image
+                            src={post.image_url}
+                            alt={post.title}
+                            fill
+                            priority={index < 3} // SEO: Faster LCP for top posts
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                            className="object-cover transition-transform duration-700 group-hover:scale-110"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-sky-100 to-sky-200 flex items-center justify-center">
+                            <span className="text-sky-600 font-bold uppercase tracking-widest text-xs">ScholarsPoint</span>
+                          </div>
+                        )}
+                        {/* Tag Overlay */}
+                        {post.tags?.[0] && (
+                          <span className="absolute top-4 left-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-sky-700 shadow-sm">
+                            {post.tags[0]}
+                          </span>
+                        )}
+                      </div>
+
+                      <CardContent className="p-6 flex flex-col flex-grow space-y-3">
+                        <header>
+                          <h2 className="text-xl font-bold text-gray-900 dark:text-white group-hover:text-sky-600 transition-colors line-clamp-2 leading-tight">
+                            {post.title}
+                          </h2>
+                        </header>
+                        <p className="text-gray-600 dark:text-gray-400 line-clamp-3 text-sm leading-relaxed">
+                          {post.excerpt}
+                        </p>
+                        <footer className="mt-auto pt-4 flex items-center justify-between border-t border-gray-50 dark:border-neutral-800">
+                          <div className="text-xs font-medium text-gray-500 uppercase tracking-tighter">
+                            By <span className="text-gray-900 dark:text-gray-200">{post.author_name}</span>
+                          </div>
+                          <time className="text-xs text-gray-400" dateTime={post.published_at}>
+                            {new Date(post.published_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                          </time>
+                        </footer>
+                      </CardContent>
+                    </Card>
+                  </Link>
+                </article>
+              ))}
+            </div>
+          )}
+        </section>
+      </main>
+    </>
   )
 }

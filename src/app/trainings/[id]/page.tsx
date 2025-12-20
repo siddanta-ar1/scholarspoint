@@ -17,6 +17,7 @@ import {
   Briefcase,
   Shapes,
   ClipboardList,
+  ArrowLeft,
 } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -147,6 +148,12 @@ export default function TrainingDetail() {
 
   return (
     <main className="max-w-4xl mx-auto px-4 py-10 space-y-10 bg-background text-gray-800">
+      <nav className="flex items-center justify-between mb-4">
+                  <Link href="/trainings" className="text-sky-600 font-bold flex items-center gap-2 hover:opacity-80">
+                    <ArrowLeft size={20} /> Back
+                  </Link>
+                
+                </nav>
       {/* --- Header Section --- */}
       <section className="space-y-4">
         {training.image_url && (

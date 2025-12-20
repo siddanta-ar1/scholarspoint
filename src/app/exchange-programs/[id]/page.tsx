@@ -6,6 +6,7 @@ import { supabase } from '@/lib/supabaseClient'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { toast } from 'sonner'
+import Script from 'next/script'
 import {
   Loader2,
   Clock,
@@ -17,11 +18,11 @@ import {
   Plane,
   Layers,
   ClipboardList,
+  ArrowLeft,
 } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
 
-// Define the type for a single Exchange Program
 type ExchangeProgram = {
   id: string
   title: string
@@ -43,7 +44,6 @@ type ExchangeProgram = {
   documents_required: string[]
 }
 
-// Helper component for displaying key details with icons
 const InfoItem = ({
   icon,
   label,
@@ -53,25 +53,27 @@ const InfoItem = ({
   label: string
   value: string
 }) => (
-  <div className="flex items-start gap-3">
-    <div className="flex-shrink-0 text-primary-dark mt-1">{icon}</div>
+  <div className="flex items-start gap-3 group">
+    <div className="flex-shrink-0 text-sky-700 mt-1 transition-colors group-hover:text-sky-500">
+      {icon}
+    </div>
     <div>
-      <p className="font-semibold text-gray-800">{label}</p>
-      <p className="text-gray-700 capitalize">{value}</p>
+      <p className="font-bold text-gray-900 text-xs uppercase tracking-widest">{label}</p>
+      <p className="text-gray-700 leading-tight">{value}</p>
     </div>
   </div>
 )
 
 export default function ExchangeProgramDetail() {
   const { id } = useParams()
-  const [exchangeProgram, setExchangeProgram] =
-    useState<ExchangeProgram | null>(null)
+  const [exchangeProgram, setExchangeProgram] = useState<ExchangeProgram | null>(null)
   const [loading, setLoading] = useState(true)
   const [isExpired, setIsExpired] = useState(false)
 
   useEffect(() => {
     const fetchProgram = async () => {
       if (!id) return
+      setLoading(true)
 
       const { data, error } = await supabase
         .from('exchange_programs')
@@ -92,9 +94,7 @@ export default function ExchangeProgramDetail() {
         const deadlineDate = new Date(data.deadline)
         const today = new Date()
         today.setHours(0, 0, 0, 0)
-        if (deadlineDate < today) {
-          expired = true
-        }
+        if (deadlineDate < today) expired = true
       }
       setIsExpired(expired)
       setLoading(false)
@@ -103,223 +103,194 @@ export default function ExchangeProgramDetail() {
     fetchProgram()
   }, [id])
 
+  // Structured Data for Sitelinks & SEO
+  const jsonLd = exchangeProgram ? {
+    "@context": "https://schema.org",
+    "@type": "Event",
+    "name": exchangeProgram.title,
+    "description": exchangeProgram.description,
+    "image": exchangeProgram.image_url,
+    "startDate": exchangeProgram.program_dates.split(' - ')[0] || "",
+    "location": {
+      "@type": "Place",
+      "name": exchangeProgram.location,
+      "address": {
+        "@type": "PostalAddress",
+        "addressCountry": exchangeProgram.country
+      }
+    },
+    "organizer": {
+      "@type": "Organization",
+      "name": exchangeProgram.organization,
+      "url": "https://scholarspoint.net"
+    },
+    "offers": {
+      "@type": "Offer",
+      "url": exchangeProgram.application_url,
+      "availability": isExpired ? "https://schema.org/OutOfStock" : "https://schema.org/InStock",
+      "validThrough": exchangeProgram.deadline
+    }
+  } : null;
+
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-[40vh] bg-background">
-        <Loader2 className="animate-spin w-10 h-10 text-primary" />
+      <div className="flex justify-center items-center min-h-[60vh]">
+        <Loader2 className="animate-spin w-12 h-12 text-sky-600" />
       </div>
     )
   }
 
   if (!exchangeProgram) {
     return (
-      <div className="text-center py-10 bg-background min-h-screen">
-        <h2 className="text-2xl font-bold text-red-600">
-          Exchange Program Not Found
-        </h2>
-        <p className="text-gray-600 mt-2">
-          The program you are looking for does not exist or has been removed.
-        </p>
-        <Button className="mt-6 bg-primary hover:bg-primary/90 text-primary-foreground">
-          <Link href="/exchange-programs">Browse Exchange Programs</Link>
-        </Button>
-      </div>
-    )
-  }
-
-  if (isExpired) {
-    return (
-      <div className="max-w-4xl mx-auto px-4 py-10 text-center bg-background min-h-screen">
-        <h1 className="text-3xl font-bold text-red-600 mb-4">
-          This Program Has Expired
-        </h1>
-        <p className="text-lg text-gray-700 mb-6">
-          The application deadline for{' '}
-          <span className="font-semibold">{exchangeProgram.title}</span> has
-          passed.
-        </p>
-        <p className="text-gray-600">
-          Please check out our other opportunities.
-        </p>
-        <Button className="mt-6 bg-primary hover:bg-primary/90 text-primary-foreground">
-          <Link href="/exchange-programs">View Active Programs</Link>
+      <div className="text-center py-20 px-4">
+        <h2 className="text-2xl font-bold text-gray-900">Program Not Found</h2>
+        <Button asChild className="mt-6 bg-sky-600">
+          <Link href="/exchange-programs">Browse All Programs</Link>
         </Button>
       </div>
     )
   }
 
   return (
-    <main className="max-w-4xl mx-auto px-4 py-10 space-y-10 bg-background text-gray-800">
-      {/* --- Header Section --- */}
-      <section className="space-y-4">
-        {exchangeProgram.image_url && (
-          <div className="relative w-full h-80 rounded-xl overflow-hidden shadow-lg">
-            <Image
-              src={exchangeProgram.image_url}
-              alt={exchangeProgram.title}
-              fill
-              className="object-cover"
-              sizes="(max-width: 768px) 100vw, 896px"
-              priority
-            />
-          </div>
-        )}
-        <div>
-          <h1 className="text-3xl lg:text-4xl font-extrabold text-primary leading-tight">
-            {exchangeProgram.title}
-          </h1>
-          <p className="text-muted-foreground text-lg mt-2">
-            {exchangeProgram.organization}
-          </p>
-        </div>
-      </section>
+    <>
+      {jsonLd && (
+        <Script
+          id="exchange-schema"
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
+      )}
 
-      {/* --- Key Details Section --- */}
-      <section className="p-6 bg-card rounded-lg shadow-sm border border-border">
-        <h2 className="text-2xl font-bold mb-5 text-gray-900">
-          Program Highlights
-        </h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-5">
-          <InfoItem
-            icon={<Globe size={20} />}
-            label="Location"
-            value={`${exchangeProgram.location}, ${exchangeProgram.country}`}
-          />
-          <InfoItem
-            icon={<Calendar size={20} />}
-            label="Program Dates"
-            value={exchangeProgram.program_dates}
-          />
-          <InfoItem
-            icon={<Clock size={20} />}
-            label="Duration"
-            value={exchangeProgram.duration}
-          />
-          <InfoItem
-            icon={<Calendar size={20} />}
-            label="Application Deadline"
-            value={
-              exchangeProgram.deadline
-                ? new Date(exchangeProgram.deadline).toLocaleDateString(
-                    'en-US',
-                    { year: 'numeric', month: 'long', day: 'numeric' },
-                  )
-                : 'Varies'
-            }
-          />
-          <InfoItem
-            icon={<CheckCircle2 size={20} />}
-            label="Funding"
-            value={exchangeProgram.funding_type.replace(/_/g, ' ')}
-          />
-        </div>
-      </section>
+      <main className="max-w-5xl mx-auto px-4 py-8 md:py-12 space-y-10">
+        <nav className="flex items-center justify-between mb-4">
+          <Link href="/exchange-programs" className="text-sky-600 font-bold flex items-center gap-2 hover:opacity-80">
+            <ArrowLeft size={20} /> Back
+          </Link>
+        
+        </nav>
 
-      {/* --- Detailed Information Sections --- */}
-      <div className="space-y-8">
-        <section className="p-6 bg-card rounded-lg shadow-sm border border-border">
-          <h2 className="text-2xl font-bold mb-3 text-gray-900 flex items-center gap-2">
-            <ClipboardList size={24} className="text-primary-dark" /> About the
-            Program
-          </h2>
-          <div className="prose max-w-none text-gray-700 leading-relaxed whitespace-pre-wrap">
-            {exchangeProgram.description}
+        {/* --- Header Section --- */}
+        <header className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+          <div className="space-y-6">
+             <div className="inline-flex items-center px-3 py-1 rounded-full bg-sky-50 text-sky-700 text-xs font-bold uppercase tracking-widest border border-sky-100">
+               Global Exchange Opportunity
+             </div>
+             <h1 className="text-3xl md:text-5xl font-black text-gray-900 leading-tight">
+               {exchangeProgram.title}
+             </h1>
+             <p className="text-xl text-gray-600 font-medium">
+               Hosted by <span className="text-sky-700">{exchangeProgram.organization}</span>
+             </p>
           </div>
+          {exchangeProgram.image_url && (
+            <div className="relative aspect-[4/3] w-full rounded-3xl overflow-hidden shadow-2xl ring-8 ring-gray-50">
+              <Image
+                src={exchangeProgram.image_url}
+                alt={`${exchangeProgram.title} in ${exchangeProgram.country}`}
+                fill
+                className="object-cover"
+                priority
+              />
+            </div>
+          )}
+        </header>
+
+        {/* --- Core Details Grid --- */}
+        <section className="grid grid-cols-2 md:grid-cols-4 gap-6 p-8 bg-white rounded-3xl border border-gray-100 shadow-sm">
+          <InfoItem icon={<Globe size={20} />} label="Country" value={exchangeProgram.country} />
+          <InfoItem icon={<Clock size={20} />} label="Duration" value={exchangeProgram.duration} />
+          <InfoItem icon={<Calendar size={20} />} label="Deadline" value={exchangeProgram.deadline ? new Date(exchangeProgram.deadline).toLocaleDateString() : 'Rolling'} />
+          <InfoItem icon={<CheckCircle2 size={20} />} label="Funding" value={exchangeProgram.funding_type.replace(/_/g, ' ')} />
         </section>
 
-        {exchangeProgram.program_components &&
-          exchangeProgram.program_components.length > 0 && (
-            <section className="p-6 bg-card rounded-lg shadow-sm border border-border">
-              <h2 className="text-2xl font-bold mb-3 text-gray-900 flex items-center gap-2">
-                <Layers size={24} className="text-primary-dark" /> Program
-                Components
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
+          {/* Main Content Column */}
+          <div className="lg:col-span-2 space-y-12">
+            <article>
+              <h2 className="text-2xl font-black text-gray-900 mb-6 flex items-center gap-3">
+                <ClipboardList className="text-sky-600" /> About the Program
               </h2>
-              <ul className="list-disc list-inside space-y-2 text-gray-700">
-                {exchangeProgram.program_components.map((item, idx) => (
-                  <li key={idx}>{item}</li>
-                ))}
-              </ul>
-            </section>
-          )}
+              <div className="text-gray-700 text-lg leading-relaxed whitespace-pre-wrap prose prose-sky">
+                {exchangeProgram.description}
+              </div>
+            </article>
 
-        {exchangeProgram.benefits && exchangeProgram.benefits.length > 0 && (
-          <section className="p-6 bg-card rounded-lg shadow-sm border border-border">
-            <h2 className="text-2xl font-bold mb-3 text-gray-900 flex items-center gap-2">
-              <Plane size={24} className="text-primary-dark" /> Key Benefits
-            </h2>
-            <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {exchangeProgram.benefits.map((benefit, idx) => (
-                <li key={idx} className="flex items-center gap-2 text-gray-700">
-                  <CheckCircle2 className="text-green-500 w-5 h-5 flex-shrink-0" />
-                  <span>{benefit}</span>
-                </li>
-              ))}
-            </ul>
-          </section>
-        )}
+            {exchangeProgram.program_components?.length > 0 && (
+              <section className="bg-gray-50 p-8 rounded-3xl border border-gray-100">
+                <h2 className="text-xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+                  <Layers className="text-sky-600" /> Key Components
+                </h2>
+                <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {exchangeProgram.program_components.map((item, idx) => (
+                    <li key={idx} className="flex items-center gap-3 text-gray-700 bg-white p-4 rounded-xl shadow-sm border border-gray-100">
+                      <div className="w-2 h-2 rounded-full bg-sky-500" /> {item}
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            )}
 
-        {exchangeProgram.focus_areas &&
-          exchangeProgram.focus_areas.length > 0 && (
-            <section className="p-6 bg-card rounded-lg shadow-sm border border-border">
-              <h2 className="text-2xl font-bold mb-3 text-gray-900 flex items-center gap-2">
-                <Target size={24} className="text-primary-dark" /> Focus Areas
+            <section>
+              <h2 className="text-2xl font-black text-gray-900 mb-6 flex items-center gap-3">
+                <Target className="text-sky-600" /> Focus Areas
               </h2>
-              <div className="flex flex-wrap gap-2">
+              <div className="flex flex-wrap gap-3">
                 {exchangeProgram.focus_areas.map((area, idx) => (
-                  <Badge
-                    key={idx}
-                    variant="outline"
-                    className="bg-blue-100 text-blue-800 hover:bg-blue-200"
-                  >
+                  <Badge key={idx} variant="secondary" className="px-6 py-2 rounded-full bg-sky-100 text-sky-800 border-none hover:bg-sky-200 transition-colors">
                     {area}
                   </Badge>
                 ))}
               </div>
             </section>
-          )}
-
-        <section className="p-6 bg-card rounded-lg shadow-sm border border-border">
-          <h2 className="text-2xl font-bold mb-3 text-gray-900 flex items-center gap-2">
-            <ClipboardList size={24} className="text-primary-dark" />{' '}
-            Eligibility Criteria
-          </h2>
-          <div className="prose max-w-none text-gray-700 leading-relaxed whitespace-pre-wrap">
-            {exchangeProgram.eligibility_criteria}
           </div>
-        </section>
 
-        {exchangeProgram.documents_required &&
-          exchangeProgram.documents_required.length > 0 && (
-            <section className="p-6 bg-card rounded-lg shadow-sm border border-border">
-              <h2 className="text-2xl font-bold mb-3 text-gray-900 flex items-center gap-2">
-                <FileText size={24} className="text-primary-dark" /> Required
-                Documents
-              </h2>
-              <ul className="list-disc list-inside space-y-2 text-gray-700">
-                {exchangeProgram.documents_required.map((doc, idx) => (
-                  <li key={idx}>{doc}</li>
-                ))}
-              </ul>
-            </section>
-          )}
-      </div>
+          {/* Sticky Sidebar Column */}
+          <aside className="space-y-8">
+            <div className="sticky top-24 space-y-6">
+              <div className="bg-sky-900 text-white p-8 rounded-3xl shadow-xl space-y-6">
+                <h3 className="text-xl font-bold flex items-center gap-2">
+                  <Plane className="text-sky-300" /> Program Benefits
+                </h3>
+                <ul className="space-y-4">
+                  {exchangeProgram.benefits.map((benefit, idx) => (
+                    <li key={idx} className="flex items-start gap-3 text-sky-50 text-sm">
+                      <CheckCircle2 size={18} className="text-sky-400 shrink-0" />
+                      <span>{benefit}</span>
+                    </li>
+                  ))}
+                </ul>
+                <div className="pt-6 border-t border-white/10">
+                  <p className="text-xs uppercase tracking-widest text-sky-300 font-bold mb-4">Application Link</p>
+                  {isExpired ? (
+                    <Button disabled className="w-full bg-red-500/20 text-red-200 border border-red-500/50">Expired</Button>
+                  ) : (
+                    <Button asChild size="lg" className="w-full bg-white text-sky-900 hover:bg-sky-50 font-black rounded-xl">
+                      <a href={exchangeProgram.application_url} target="_blank" rel="noopener noreferrer">
+                        Apply Now
+                      </a>
+                    </Button>
+                  )}
+                </div>
+              </div>
 
-      {/* --- Apply Button Section --- */}
-      <section className="text-center pt-6 border-t border-border">
-        <Button
-          asChild
-          size="lg"
-          className="mt-6 bg-blue-600 hover:bg-blue-700 text-white"
-        >
-          <a
-            href={exchangeProgram.application_url}
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Apply Now
-          </a>
-        </Button>
-      </section>
-    </main>
+              {exchangeProgram.documents_required?.length > 0 && (
+                <div className="p-8 bg-white rounded-3xl border border-gray-100 shadow-sm">
+                  <h3 className="font-bold text-gray-900 mb-4 flex items-center gap-2">
+                    <FileText size={20} className="text-sky-600" /> Required Docs
+                  </h3>
+                  <ul className="space-y-2">
+                    {exchangeProgram.documents_required.map((doc, idx) => (
+                      <li key={idx} className="text-sm text-gray-600 flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-gray-300" /> {doc}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          </aside>
+        </div>
+      </main>
+    </>
   )
 }

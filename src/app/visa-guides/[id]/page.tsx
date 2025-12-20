@@ -5,7 +5,8 @@ import { useParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabaseClient'
 import { toast } from 'sonner'
-import { Loader2 } from 'lucide-react'
+import { ArrowLeft, Loader2 } from 'lucide-react'
+import Link from 'next/link'
 
 /* ----------------------------- Types ----------------------------- */
 
@@ -172,6 +173,12 @@ export default function VisaGuideDetail(): React.ReactElement | null {
 
     return (
       <div className="space-y-4 text-gray-800 dark:text-gray-300">
+        <nav className="flex items-center justify-between mb-4">
+                  <Link href="/visa-guides" className="text-sky-600 font-bold flex items-center gap-2 hover:opacity-80">
+                    <ArrowLeft size={20} /> Back
+                  </Link>
+                
+                </nav>
         {docs.length > 0 && (
           <div>
             <h3 className="font-medium mb-2">Documents</h3>

@@ -18,7 +18,8 @@ import {
   BookOpen,
   Building,
   Globe,
-  Users
+  Users,
+  ArrowLeft
 } from 'lucide-react'
 import Image from 'next/image'
 import Link from 'next/link'
@@ -167,6 +168,12 @@ export default function ScholarshipDetailPage() {
 
   return (
     <main className="bg-slate-50 py-10">
+      <nav className="flex items-center justify-between mb-4">
+                  <Link href="/scholarships" className="text-sky-600 font-bold flex items-center gap-2 hover:opacity-80">
+                    <ArrowLeft size={20} /> Back
+                  </Link>
+                
+                </nav>
       <div className="max-w-4xl mx-auto px-4 space-y-8">
         {scholarship.image_url && (
           <div className="relative w-full h-80 rounded-xl overflow-hidden shadow-lg">

@@ -13,7 +13,7 @@ import {
   SelectContent,
   SelectItem,
 } from '@/components/ui/select'
-import { Loader2, X } from 'lucide-react'
+import { ArrowLeft, Loader2, X } from 'lucide-react'
 
 /* ----------------------------- Types ----------------------------- */
 type StudentLevel = 'undergraduate' | 'graduate' | 'phd' | 'all' | ''
@@ -152,6 +152,12 @@ export default function ScholarshipsPage() {
   /* ----------------------------- Render ----------------------------- */
   return (
     <main className="max-w-7xl mx-auto px-4 sm:px-6 md:px-8 py-10 space-y-10">
+      <nav className="flex items-center justify-between mb-4">
+                  <Link href="/online-courses" className="text-sky-600 font-bold flex items-center gap-2 hover:opacity-80">
+                    <ArrowLeft size={20} /> Back
+                  </Link>
+                
+                </nav>
       {/* Header */}
       <section className="text-center space-y-3">
         <h1 className="text-4xl font-extrabold text-sky-700">Scholarship Opportunities</h1>
