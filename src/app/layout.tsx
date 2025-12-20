@@ -43,8 +43,8 @@ Let ScholarsPoint guide you through every step of your journey—from finding th
     creator: '@scholarspoint',
   },
   icons: {
-    icon: '/favicon.png',
-    shortcut: '/favicon.png',
+    icon: '/favicon.ico',
+    shortcut: '/favicon.ico',
   },
  keywords : [
     // --- Scholarships ---
@@ -232,7 +232,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               "@type": "Organization",
               "name": "ScholarsPoint",
               "url": "https://scholarspoint.net",
-              "logo": "https://scholarspoint.net/favicon.png",
+              "logo": "https://scholarspoint.net/favicon.ico",
               "sameAs": [
                 " https://www.facebook.com/scholars.point.133274",
               "https://www.instagram.com/scholarspoint3/", 
