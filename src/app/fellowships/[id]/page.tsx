@@ -2,18 +2,21 @@
 
 import { supabase } from '@/lib/supabaseClient'
 import { Metadata } from 'next'
-import FellowshipDetail from '../FellowshipDetails'
+import FellowshipDetail from '../FellowshipDetails';
 
+// 1. Update the Props type: params is now a Promise
 type Props = {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
-// 1. Dynamic SEO Metadata
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  // 2. Await the params
+  const { id } = await params;
+
   const { data: fellowship } = await supabase
     .from('fellowships')
-    .select('title, description, image_url, organization')
-    .eq('id', params.id)
+    .select('title, description, image_url')
+    .eq('id', id)
     .single()
 
   if (!fellowship) return { title: 'Fellowship Not Found' }
@@ -25,17 +28,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       title: fellowship.title,
       description: fellowship.description.substring(0, 160),
       images: fellowship.image_url ? [fellowship.image_url] : [],
-      type: 'website',
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: fellowship.title,
-      description: fellowship.description.substring(0, 160),
-      images: fellowship.image_url ? [fellowship.image_url] : [],
     },
   }
 }
 
-export default function Page({ params }: Props) {
+export default async function Page({ params }: Props) {
+  // 3. Await params here as well before passing it or rendering
+  const resolvedParams = await params;
+  
   return <FellowshipDetail />
 }

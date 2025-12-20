@@ -4,14 +4,16 @@ import { Metadata } from 'next'
 import InternshipDetail from '../IntershipDetails'
 
 type Props = {
-  params: { id: string }
+  params: Promise<{ id: string }>
 }
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const { id } = await params;
+
   const { data: internship } = await supabase
     .from('internships')
     .select('title, company, description, image_url')
-    .eq('id', params.id)
+    .eq('id', id)
     .single()
 
   if (!internship) return { title: 'Internship Not Found' }
