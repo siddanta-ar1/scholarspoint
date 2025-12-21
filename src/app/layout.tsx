@@ -6,6 +6,7 @@ import { Analytics } from "@vercel/analytics/next"
 import { Toaster } from 'sonner'
 import { Navbar } from '@/components/navbar'
 import { Footer } from '@/components/footer'
+import Script from 'next/script'
 
 const inter = Inter({ subsets: ['latin'], display: 'swap' })
 
@@ -252,6 +253,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           className="min-h-screen max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
         >
           {children}
+           <Script
+          id="adsense-init"
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6531423360862071"
+          crossOrigin="anonymous"
+          strategy="afterInteractive"
+        />
         </main>
         <Footer />
         <Analytics/>
