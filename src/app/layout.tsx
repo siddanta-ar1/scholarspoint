@@ -223,6 +223,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta charSet="UTF-8" />
         <meta name="theme-color" content="#1d4ed8" />
         <link rel="canonical" href="https://scholarspoint.net" />
+        <script 
+          async 
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6531423360862071"
+          crossOrigin="anonymous"
+        ></script>
 
         {/* JSON-LD Structured Data for Google */}
         <script
@@ -253,16 +258,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           className="min-h-screen max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
         >
           {children}
-           <Script
-          id="adsense-init"
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6531423360862071"
-          crossOrigin="anonymous"
-          strategy="afterInteractive"
-        />
+
         </main>
         <Footer />
         <Analytics/>
+       
       </body>
     </html>
   )
