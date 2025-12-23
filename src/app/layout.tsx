@@ -223,11 +223,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta charSet="UTF-8" />
         <meta name="theme-color" content="#1d4ed8" />
         <link rel="canonical" href="https://scholarspoint.net" />
-        <script 
-          async 
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6531423360862071"
-          crossOrigin="anonymous"
-        ></script>
+        
+        {/* --- FIX: REMOVED THE STANDARD AD SENSE SCRIPT TAG FROM HERE --- */}
 
         {/* JSON-LD Structured Data for Google */}
         <script
@@ -236,33 +233,37 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "Organization",
-              "name": "ScholarsPoint",
+              "name": "Scholarspoint",
               "url": "https://scholarspoint.net",
               "logo": "https://scholarspoint.net/favicon.ico",
               "sameAs": [
-                " https://www.facebook.com/scholars.point.133274",
-              "https://www.instagram.com/scholarspoint3/", 
-              "https://www.tiktok.com/@scholars_point",
-              "https://www.linkedin.com/in/siddanta-sodari-08596a335/"
+                "https://www.facebook.com/scholars.point.133274",
+                "https://www.instagram.com/scholarspoint3/", 
+                "https://www.tiktok.com/@scholars_point",
+                "https://www.linkedin.com/in/siddanta-sodari-08596a335/"
               ]
             }),
           }}
-        ></script>
+        />
       </head>
-      <body className={`${inter.className} bg-white text-gray-900 antialiased`}>
-        <Toaster richColors position="top-center" />
-        <Navbar />
-        <main
-          role="main"
-          id="main-content"
-          className="min-h-screen max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8"
-        >
-          {children}
+      
+      {/* --- FIX: Added inter.className to apply the font --- */}
+      <body className={inter.className}>
+        <Navbar /> {/* You likely missed adding this back in your snippet, so I added it here if you use it */}
+        
+        {children}
+        
+        <Footer/>
+        <Analytics />
 
-        </main>
-        <Footer />
-        <Analytics/>
-       
+        {/* --- FIX: Single Source of Truth for AdSense --- */}
+        <Script
+          id="adsense-init"
+          async
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6531423360862071"
+          crossOrigin="anonymous"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   )

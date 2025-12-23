@@ -22,10 +22,10 @@ type Scholarship = {
   id: string
   title: string
   organization: string
-  country: string
+  country: string | null
   deadline: string
   student_level: string
-  field_of_study: string
+  field_of_study: string | null
   image_url?: string | null
   is_active?: boolean | null
 }
@@ -128,15 +128,20 @@ export default function ScholarshipsPage() {
     return () => document.removeEventListener('click', onDocClick)
   }, [])
 
-  /* ---------------- filtering logic (uses debounced inputs) ---------------- */
+/* ---------------- filtering logic (uses debounced inputs) ---------------- */
   useEffect(() => {
     const c = debouncedCountry.trim().toLowerCase()
     const f = debouncedField.trim().toLowerCase()
 
     const result = scholarships.filter((s) => {
-      const matchesCountry = c ? s.country.toLowerCase().includes(c) : true
+      // FIX: Add optional chaining or fallback to empty string
+      const country = s.country || ''
+      const field = s.field_of_study || ''
+
+      const matchesCountry = c ? country.toLowerCase().includes(c) : true
       const matchesLevel = level && level !== 'all' ? s.student_level === level : true
-      const matchesField = f ? s.field_of_study.toLowerCase().includes(f) : true
+      const matchesField = f ? field.toLowerCase().includes(f) : true
+      
       return matchesCountry && matchesLevel && matchesField
     })
 
