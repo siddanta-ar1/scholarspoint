@@ -1,22 +1,31 @@
-'use client'
+"use client";
 
-import { useState, useEffect, useRef } from 'react'
-import Link from 'next/link'
-import Image from 'next/image'
-import { supabase } from '@/lib/supabaseClient'
-import { Input } from '@/components/ui/input'
-import { Badge } from '@/components/ui/badge'
-import { Loader2, Search, Briefcase, Award, GraduationCap, Plane, Trophy, Presentation } from 'lucide-react'
+import { useState, useEffect, useRef } from "react";
+import Link from "next/link";
+import Image from "next/image";
+import { supabase } from "@/lib/supabaseClient";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import {
+  Loader2,
+  Search,
+  Briefcase,
+  Award,
+  GraduationCap,
+  Plane,
+  Trophy,
+  Presentation,
+} from "lucide-react";
 
 // A unified type for all search results to make rendering easy
 type SearchResult = {
-  id: string
-  title: string
-  image_url?: string | null
-  detail: string // This will hold company, organization, institution, etc.
-  href: string
-  category: string
-}
+  id: string;
+  title: string;
+  image_url?: string | null;
+  detail: string; // This will hold company, organization, institution, etc.
+  href: string;
+  category: string;
+};
 
 // A map to associate categories with icons
 const categoryIcons: { [key: string]: React.ReactNode } = {
@@ -25,98 +34,141 @@ const categoryIcons: { [key: string]: React.ReactNode } = {
   Fellowship: <GraduationCap className="w-4 h-4 text-green-500" />,
   Competition: <Trophy className="w-4 h-4 text-red-500" />,
   Conference: <Presentation className="w-4 h-4 text-purple-500" />,
-  'Exchange Program': <Plane className="w-4 h-4 text-indigo-500" />,
-}
+  "Exchange Program": <Plane className="w-4 h-4 text-indigo-500" />,
+};
 
 // Custom hook for debouncing input
 function useDebouncedValue<T>(value: T, delay = 400) {
-  const [debounced, setDebounced] = useState<T>(value)
+  const [debounced, setDebounced] = useState<T>(value);
   useEffect(() => {
-    const t = setTimeout(() => setDebounced(value), delay)
-    return () => clearTimeout(t)
-  }, [value, delay])
-  return debounced
+    const t = setTimeout(() => setDebounced(value), delay);
+    return () => clearTimeout(t);
+  }, [value, delay]);
+  return debounced;
 }
 
 export default function GlobalSearch() {
-  const [searchTerm, setSearchTerm] = useState('')
-  const [results, setResults] = useState<SearchResult[]>([])
-  const [loading, setLoading] = useState(false)
-  const [isOpen, setIsOpen] = useState(false)
-  
-  const debouncedSearchTerm = useDebouncedValue(searchTerm)
-  const searchRef = useRef<HTMLDivElement>(null)
+  const [searchTerm, setSearchTerm] = useState("");
+  const [results, setResults] = useState<SearchResult[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+
+  const debouncedSearchTerm = useDebouncedValue(searchTerm);
+  const searchRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // Fetches data from all tables in parallel
     const performSearch = async (term: string) => {
       if (!term.trim()) {
-        setResults([])
-        return
+        setResults([]);
+        return;
       }
-      setLoading(true)
+      setLoading(true);
 
       const tables = [
-        { name: 'scholarships', detailKey: 'organization', category: 'Scholarship', path: '/scholarships' },
-        { name: 'internships', detailKey: 'company', category: 'Internship', path: '/internships' },
-        { name: 'fellowships', detailKey: 'organization', category: 'Fellowship', path: '/fellowships' },
-        { name: 'competitions', detailKey: 'organization', category: 'Competition', path: '/competitions' },
-        { name: 'conferences', detailKey: 'scholarship_name', category: 'Conference', path: '/conferences' },
-        { name: 'trainings', detailKey: 'organization', category: 'Training', path: '/trainings' },
-        { name: 'exchange_programs', detailKey: 'organization', category: 'Exchange Program', path: '/exchange-programs' },
-        { name: 'online_courses', detailKey: 'institution', category: 'Online Course', path: '/online-courses' },
-      ]
+        {
+          name: "scholarships",
+          detailKey: "organization",
+          category: "Scholarship",
+          path: "/scholarships",
+        },
+        {
+          name: "internships",
+          detailKey: "company",
+          category: "Internship",
+          path: "/internships",
+        },
+        {
+          name: "fellowships",
+          detailKey: "organization",
+          category: "Fellowship",
+          path: "/fellowships",
+        },
+        {
+          name: "competitions",
+          detailKey: "organization",
+          category: "Competition",
+          path: "/competitions",
+        },
+        {
+          name: "conferences",
+          detailKey: "scholarship_name",
+          category: "Conference",
+          path: "/conferences",
+        },
+        {
+          name: "trainings",
+          detailKey: "organization",
+          category: "Training",
+          path: "/workshops",
+        },
+        {
+          name: "exchange_programs",
+          detailKey: "organization",
+          category: "Exchange Program",
+          path: "/exchange_programs",
+        },
+        {
+          name: "online_courses",
+          detailKey: "institution",
+          category: "Online Course",
+          path: "/online_courses",
+        },
+      ];
 
       try {
-        const queries = tables.map(table =>
+        const queries = tables.map((table) =>
           supabase
             .from(table.name)
             .select(`id, title, image_url, ${table.detailKey}`)
-            .ilike('title', `%${term}%`)
-            .limit(4)
-        )
+            .ilike("title", `%${term}%`)
+            .limit(4),
+        );
 
-        const responses = await Promise.all(queries)
-        
-        let allResults: SearchResult[] = []
+        const responses = await Promise.all(queries);
+
+        let allResults: SearchResult[] = [];
 
         responses.forEach((res, index) => {
           if (res.data) {
-            const table = tables[index]
+            const table = tables[index];
             const mappedData = res.data.map((item: any) => ({
               id: item.id,
               title: item.title,
               image_url: item.image_url,
-              detail: item[table.detailKey] || '',
+              detail: item[table.detailKey] || "",
               href: `${table.path}/${item.id}`,
               category: table.category,
-            }))
-            allResults = [...allResults, ...mappedData]
+            }));
+            allResults = [...allResults, ...mappedData];
           }
-        })
-        
-        setResults(allResults)
-      } catch (error) {
-        console.error("Error performing global search:", error)
-        setResults([])
-      } finally {
-        setLoading(false)
-      }
-    }
+        });
 
-    performSearch(debouncedSearchTerm)
-  }, [debouncedSearchTerm])
+        setResults(allResults);
+      } catch (error) {
+        console.error("Error performing global search:", error);
+        setResults([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    performSearch(debouncedSearchTerm);
+  }, [debouncedSearchTerm]);
 
   // Effect to handle clicks outside the search component to close the dropdown
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
-      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
-        setIsOpen(false)
+      if (
+        searchRef.current &&
+        !searchRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
       }
     }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [searchRef])
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [searchRef]);
 
   return (
     <div className="relative w-full max-w-2xl mx-auto" ref={searchRef}>
@@ -140,7 +192,7 @@ export default function GlobalSearch() {
             </div>
           ) : results.length > 0 ? (
             <ul>
-              {results.map(result => (
+              {results.map((result) => (
                 <li key={`${result.category}-${result.id}`}>
                   <Link
                     href={result.href}
@@ -157,16 +209,20 @@ export default function GlobalSearch() {
                           className="object-cover w-full h-full"
                         />
                       ) : (
-                        <div className="text-muted-foreground">{categoryIcons[result.category]}</div>
+                        <div className="text-muted-foreground">
+                          {categoryIcons[result.category]}
+                        </div>
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <p className="font-semibold truncate">{result.title}</p>
-                      <p className="text-sm text-muted-foreground truncate">{result.detail}</p>
+                      <p className="text-sm text-muted-foreground truncate">
+                        {result.detail}
+                      </p>
                     </div>
                     <Badge variant="secondary" className="flex-shrink-0">
-                        {categoryIcons[result.category]}
-                        <span className="ml-1.5">{result.category}</span>
+                      {categoryIcons[result.category]}
+                      <span className="ml-1.5">{result.category}</span>
                     </Badge>
                   </Link>
                 </li>
@@ -180,5 +236,5 @@ export default function GlobalSearch() {
         </div>
       )}
     </div>
-  )
+  );
 }

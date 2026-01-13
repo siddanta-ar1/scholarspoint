@@ -1,44 +1,24 @@
-// app/internships/[id]/page.tsx
-import { supabase } from '@/lib/supabaseClient'
-import { Metadata } from 'next'
-import InternshipDetail from '../IntershipDetails'
+import { supabase } from "@/lib/supabaseClient";
+import OpportunityDetailView from "@/components/OpportunityDetailView";
+import { notFound } from "next/navigation";
 
-type Props = {
-  params: Promise<{ id: string }>
-}
+export const revalidate = 60; // Revalidate every minute
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export default async function InternshipPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = await params;
 
-  const { data: internship } = await supabase
-    .from('internships')
-    .select('title, company, description, image_url')
-    .eq('id', id)
-    .single()
+  // Fetch from the UNIFIED table
+  const { data } = await supabase
+    .from("opportunities")
+    .select("*")
+    .eq("id", id)
+    .single();
 
-  if (!internship) return { title: 'Internship Not Found' }
+  if (!data) return notFound();
 
-  const seoTitle = `${internship.title} at ${internship.company} | ScholarsPoint`
-  const seoDesc = internship.description.substring(0, 160)
-
-  return {
-    title: seoTitle,
-    description: seoDesc,
-    openGraph: {
-      title: seoTitle,
-      description: seoDesc,
-      images: internship.image_url ? [internship.image_url] : [],
-      type: 'website',
-    },
-    twitter: {
-      card: 'summary_large_image',
-      title: seoTitle,
-      description: seoDesc,
-      images: internship.image_url ? [internship.image_url] : [],
-    },
-  }
-}
-
-export default function Page() {
-  return <InternshipDetail />
+  return <OpportunityDetailView data={data} />;
 }

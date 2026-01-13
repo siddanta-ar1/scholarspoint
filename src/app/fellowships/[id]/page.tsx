@@ -1,40 +1,24 @@
-// app/fellowships/[id]/page.tsx
+import { supabase } from "@/lib/supabaseClient";
+import OpportunityDetailView from "@/components/OpportunityDetailView";
+import { notFound } from "next/navigation";
 
-import { supabase } from '@/lib/supabaseClient'
-import { Metadata } from 'next'
-import FellowshipDetail from '../FellowshipDetails';
+export const revalidate = 60; // Revalidate every minute
 
-// 1. Update the Props type: params is now a Promise
-type Props = {
-  params: Promise<{ id: string }>
-}
-
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  // 2. Await the params
+export default async function FellowshipPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const { id } = await params;
 
-  const { data: fellowship } = await supabase
-    .from('fellowships')
-    .select('title, description, image_url')
-    .eq('id', id)
-    .single()
+  // Fetch from the UNIFIED table
+  const { data } = await supabase
+    .from("opportunities")
+    .select("*")
+    .eq("id", id)
+    .single();
 
-  if (!fellowship) return { title: 'Fellowship Not Found' }
+  if (!data) return notFound();
 
-  return {
-    title: `${fellowship.title} | ScholarsPoint`,
-    description: fellowship.description.substring(0, 160),
-    openGraph: {
-      title: fellowship.title,
-      description: fellowship.description.substring(0, 160),
-      images: fellowship.image_url ? [fellowship.image_url] : [],
-    },
-  }
-}
-
-export default async function Page({ params }: Props) {
-  // 3. Await params here as well before passing it or rendering
-  const resolvedParams = await params;
-  
-  return <FellowshipDetail />
+  return <OpportunityDetailView data={data} />;
 }
