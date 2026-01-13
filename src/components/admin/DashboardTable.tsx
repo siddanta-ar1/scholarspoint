@@ -1,9 +1,6 @@
 "use client";
-
 import { useState, useEffect } from "react";
-import Link from "next/link";
 import { supabase } from "@/lib/supabaseClient";
-import { Opportunity } from "@/types/database";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -14,100 +11,121 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Edit, Trash2, Eye } from "lucide-react";
+import { Edit, Trash2, Globe, Calendar, Loader2 } from "lucide-react";
+import Link from "next/link";
+import { toast } from "sonner";
 
-export default function DashboardTable() {
-  const [items, setItems] = useState<Opportunity[]>([]);
+export default function DashboardTable({
+  resource,
+}: {
+  resource: "opportunities" | "posts" | "visa_guides";
+}) {
+  const [items, setItems] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const fetchItems = async () => {
-    setLoading(true);
-    const { data } = await supabase
-      .from("opportunities")
-      .select("*")
-      .order("created_at", { ascending: false })
-      .limit(50); // Adjust limit as needed
-
-    if (data) setItems(data as Opportunity[]);
-    setLoading(false);
+  // Mapping resource to its specific edit route
+  const editPaths = {
+    posts: "/admin/blogs",
+    visa_guides: "/admin/visa-guides",
+    opportunities: "/admin/opportunities",
   };
 
   useEffect(() => {
+    const fetchItems = async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from(resource)
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (!error) setItems(data);
+      setLoading(false);
+    };
     fetchItems();
-  }, []);
+  }, [resource]);
 
   const handleDelete = async (id: string) => {
-    if (
-      !confirm("Are you sure you want to delete this? This cannot be undone.")
-    )
-      return;
+    if (!confirm("Permanently delete this item?")) return;
 
-    // Optimistic update (remove from UI immediately)
+    // Optimistic Update
+    const previousItems = [...items];
     setItems(items.filter((i) => i.id !== id));
 
-    const { error } = await supabase
-      .from("opportunities")
-      .delete()
-      .eq("id", id);
-
+    const { error } = await supabase.from(resource).delete().eq("id", id);
     if (error) {
-      alert("Error deleting item");
-      fetchItems(); // Revert if error
+      toast.error("Deletion failed");
+      setItems(previousItems); // Rollback
+    } else {
+      toast.success("Item deleted");
     }
   };
 
   if (loading)
-    return <div className="p-10 text-center">Loading dashboard...</div>;
+    return (
+      <div className="py-20 text-center">
+        <Loader2 className="animate-spin mx-auto text-sky-600" />
+      </div>
+    );
 
   return (
-    <div className="bg-white rounded-lg border shadow-sm overflow-hidden">
+    <div className="bg-white dark:bg-neutral-900 rounded-[24px] border shadow-xl overflow-hidden">
       <Table>
-        <TableHeader>
-          <TableRow className="bg-gray-50">
-            <TableHead>Title</TableHead>
-            <TableHead>Type</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Deadline</TableHead>
-            <TableHead className="text-right">Actions</TableHead>
+        <TableHeader className="bg-gray-50/50">
+          <TableRow>
+            <TableHead className="font-bold">Content Title</TableHead>
+            <TableHead className="font-bold">Type</TableHead>
+            <TableHead className="font-bold">Status</TableHead>
+            <TableHead className="text-right font-bold px-6">Actions</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {items.map((item) => (
-            <TableRow key={item.id}>
-              <TableCell className="font-medium max-w-[300px] truncate">
-                {item.title}
-                <div className="text-xs text-gray-500">{item.organization}</div>
+            <TableRow
+              key={item.id}
+              className="hover:bg-gray-50/50 transition-colors"
+            >
+              <TableCell className="max-w-[400px]">
+                <div className="font-bold truncate">{item.title}</div>
+                <div className="text-[10px] text-gray-400 font-mono">
+                  {item.slug || item.id}
+                </div>
               </TableCell>
               <TableCell>
-                <Badge variant="secondary" className="capitalize">
-                  {item.type.replace("_", " ")}
+                <Badge
+                  variant="outline"
+                  className="capitalize bg-sky-50 text-sky-700 border-sky-100"
+                >
+                  {item.type || resource.replace("_", " ")}
                 </Badge>
               </TableCell>
               <TableCell>
-                {item.is_active ? (
-                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                    Active
-                  </span>
+                {item.is_active || item.is_published ? (
+                  <Badge className="bg-green-50 text-green-700 border-none">
+                    <Globe size={10} className="mr-1" /> Live
+                  </Badge>
                 ) : (
-                  <span className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                    Inactive
-                  </span>
+                  <Badge variant="secondary">Draft</Badge>
                 )}
               </TableCell>
-              <TableCell>{item.deadline || "N/A"}</TableCell>
-              <TableCell className="text-right space-x-2">
-                <Link href={`/admin/opportunities/${item.id}`}>
-                  <Button variant="outline" size="sm">
-                    <Edit className="w-4 h-4" />
+              <TableCell className="text-right px-6">
+                <div className="flex justify-end gap-2">
+                  <Link href={`${editPaths[resource]}/${item.id}`}>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-9 w-9 rounded-xl hover:bg-sky-100 text-sky-600 border border-sky-50"
+                    >
+                      <Edit size={16} />
+                    </Button>
+                  </Link>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-9 w-9 rounded-xl hover:bg-red-50 text-red-500 border border-red-50"
+                    onClick={() => handleDelete(item.id)}
+                  >
+                    <Trash2 size={16} />
                   </Button>
-                </Link>
-                <Button
-                  variant="destructive"
-                  size="sm"
-                  onClick={() => handleDelete(item.id)}
-                >
-                  <Trash2 className="w-4 h-4" />
-                </Button>
+                </div>
               </TableCell>
             </TableRow>
           ))}

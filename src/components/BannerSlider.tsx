@@ -6,6 +6,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Loader2, ChevronRight } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export default function BannerSlider() {
   const [banners, setBanners] = useState<any[]>([]);

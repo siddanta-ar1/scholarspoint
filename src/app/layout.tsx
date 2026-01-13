@@ -8,6 +8,7 @@ import { Toaster } from "sonner";
 import { Footer } from "@/components/footer";
 import Script from "next/script";
 import Navbar from "@/components/navbar";
+import ClientLayoutWrapper from "@/components/ClientLayoutWrapper";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -227,53 +228,33 @@ export default function RootLayout({
   return (
     <html lang="en" className="scroll-smooth">
       <head>
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <meta charSet="UTF-8" />
-        <meta name="theme-color" content="#0284c7" />
-        <link rel="canonical" href="https://scholarspoint.net" />
-
-        {/* --- FIX: REMOVED THE STANDARD AD SENSE SCRIPT TAG FROM HERE --- */}
-
-        {/* JSON-LD Structured Data for Google */}
+        {/* JSON-LD Structured Data */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "Organization",
-              name: "Scholarspoint",
+              name: "ScholarsPoint",
               url: "https://scholarspoint.net",
-              logo: "https://scholarspoint.net/favicon.ico",
-              sameAs: [
-                "https://www.facebook.com/scholars.point.133274",
-                "https://www.instagram.com/scholarspoint3/",
-                "https://www.tiktok.com/@scholars_point",
-                "https://www.linkedin.com/in/siddanta-sodari-08596a335/",
-              ],
+              logo: "https://scholarspoint.net/logo.png",
             }),
           }}
         />
       </head>
+      <body className={`${inter.className} antialiased`}>
+        {/* This wrapper handles hiding Navbar/Footer on Admin pages */}
+        <ClientLayoutWrapper>{children}</ClientLayoutWrapper>
 
-      {/* --- FIX: Added inter.className to apply the font --- */}
-      <body
-        className={`${inter.className} bg-white dark:bg-neutral-950 text-gray-900 dark:text-gray-100 antialiased`}
-      >
-        <Navbar />
-        {children}
-        <Footer />
-
-        {/* Global UI Components */}
         <Toaster position="top-center" richColors />
         <Analytics />
 
-        {/* AdSense Optimization */}
         <Script
           id="adsense-init"
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6531423360862071"
           crossOrigin="anonymous"
-          strategy="afterInteractive"
+          strategy="lazyOnload" // Better for speed
         />
       </body>
     </html>
