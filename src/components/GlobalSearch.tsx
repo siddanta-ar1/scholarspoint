@@ -16,6 +16,7 @@ import {
   Trophy,
   Presentation,
   BookOpen,
+  X,
 } from "lucide-react";
 import { OpportunityType } from "@/types/database";
 
@@ -29,7 +30,7 @@ type SearchResult = {
   href: string;
 };
 
-// Map types to professional labels and icons
+// Map types to professional labels and icons - FIXED PATHS with underscores
 const typeConfig: Record<
   string,
   { label: string; icon: React.ReactNode; path: string }
@@ -62,12 +63,12 @@ const typeConfig: Record<
   exchange_program: {
     label: "Exchange",
     icon: <Plane className="w-4 h-4 text-indigo-500" />,
-    path: "/exchange-programs",
+    path: "/exchange_programs", // FIXED: was /exchange-programs
   },
   online_course: {
     label: "Online Course",
     icon: <BookOpen className="w-4 h-4 text-sky-500" />,
-    path: "/online-courses",
+    path: "/online_courses", // FIXED: was /online-courses
   },
   workshop: {
     label: "Workshop",
@@ -98,6 +99,7 @@ export default function GlobalSearch() {
 
   const debouncedSearchTerm = useDebouncedValue(searchTerm);
   const searchRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const performSearch = async (term: string) => {
@@ -108,12 +110,11 @@ export default function GlobalSearch() {
       setLoading(true);
 
       try {
-        // FIX: Query the unified table instead of separate tables
         const { data, error } = await supabase
           .from("opportunities")
           .select("id, title, image_url, organization, type")
           .eq("is_active", true)
-          .or(`title.ilike.%${term}%,organization.ilike.%${term}%`) // Search both title and org
+          .or(`title.ilike.%${term}%,organization.ilike.%${term}%`)
           .limit(8);
 
         if (error) throw error;
@@ -149,6 +150,29 @@ export default function GlobalSearch() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
+  // Keyboard shortcut to focus search
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === "k") {
+        e.preventDefault();
+        inputRef.current?.focus();
+        setIsOpen(true);
+      }
+      if (e.key === "Escape") {
+        setIsOpen(false);
+        inputRef.current?.blur();
+      }
+    };
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, []);
+
+  const clearSearch = () => {
+    setSearchTerm("");
+    setResults([]);
+    inputRef.current?.focus();
+  };
+
   return (
     <div className="relative w-full max-w-2xl mx-auto z-[100]" ref={searchRef}>
       <div className="relative group">
@@ -160,13 +184,26 @@ export default function GlobalSearch() {
           )}
         </div>
         <Input
+          ref={inputRef}
           type="text"
           placeholder="Search scholarships, courses, or organizations..."
-          className="w-full pl-14 pr-6 h-16 text-lg rounded-3xl shadow-2xl border-none ring-1 ring-gray-100 focus-visible:ring-2 focus-visible:ring-sky-500 bg-white/80 backdrop-blur-xl transition-all"
+          className="w-full pl-14 pr-12 h-16 text-lg rounded-3xl shadow-2xl border-none ring-1 ring-gray-100 focus-visible:ring-2 focus-visible:ring-sky-500 bg-white/80 backdrop-blur-xl transition-all"
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           onFocus={() => setIsOpen(true)}
         />
+        {searchTerm && (
+          <button
+            onClick={clearSearch}
+            className="absolute right-5 top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            <X size={18} />
+          </button>
+        )}
+        {/* Keyboard shortcut hint */}
+        <div className="absolute right-16 top-1/2 -translate-y-1/2 hidden md:flex items-center gap-1 text-xs text-gray-400">
+          <kbd className="px-1.5 py-0.5 bg-gray-100 rounded text-[10px] font-mono">⌘K</kbd>
+        </div>
       </div>
 
       {isOpen && searchTerm.length >= 2 && (
@@ -182,7 +219,7 @@ export default function GlobalSearch() {
             ) : results.length > 0 ? (
               <div className="py-4">
                 <p className="px-6 pb-2 text-[10px] font-black uppercase tracking-[0.2em] text-gray-400">
-                  Search Results
+                  {results.length} result{results.length > 1 ? "s" : ""} found
                 </p>
                 {results.map((result) => (
                   <Link

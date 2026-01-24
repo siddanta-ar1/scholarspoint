@@ -1,9 +1,17 @@
 # *
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /auth
+Disallow: /api
+
+# Googlebot
+User-agent: Googlebot
+Allow: /
 
 # Host
 Host: https://scholarspoint.net
 
 # Sitemaps
 Sitemap: https://scholarspoint.net/sitemap.xml
+Sitemap: https://scholarspoint.net/sitemap-opportunities.xml

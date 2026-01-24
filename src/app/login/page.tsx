@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import ErrorModal from "@/components/ErrorModal";
 import {
   Card,
@@ -16,14 +16,15 @@ import {
 import { Loader2, Mail, Lock, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
+import { useAuth } from "@/lib/useAuth";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const router = useRouter();
+  const { signInWithEmail, signInWithGoogle } = useAuth();
 
-  // Modal State for professional error handling
   const [errorState, setErrorState] = useState({
     isOpen: false,
     message: "",
@@ -33,34 +34,24 @@ export default function LoginPage() {
     e.preventDefault();
     setLoading(true);
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
-
-    if (error) {
-      // REPLACE alert(error.message) with custom modal state
-      setErrorState({
-        isOpen: true,
-        message:
-          error.message || "Invalid email or password. Please try again.",
-      });
-    } else {
+    try {
+      await signInWithEmail(email, password);
       router.push("/");
       router.refresh();
+    } catch (error: any) {
+      setErrorState({
+        isOpen: true,
+        message: error.message || "Invalid email or password. Please try again.",
+      });
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   const handleGoogleLogin = async () => {
-    const { error } = await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
-
-    if (error) {
+    try {
+      await signInWithGoogle();
+    } catch (error: any) {
       setErrorState({
         isOpen: true,
         message: error.message,
@@ -78,7 +69,7 @@ export default function LoginPage() {
       />
 
       <div className="min-h-[85vh] flex items-center justify-center px-4 py-12 bg-gray-50/50 dark:bg-transparent">
-        <Card className="w-full max-w-md shadow-2xl border-t-4 border-t-sky-600">
+        <Card className="w-full max-w-md shadow-2xl border-t-4 border-t-sky-600 rounded-2xl">
           <CardHeader className="space-y-1 text-center">
             <CardTitle className="text-3xl font-bold text-gray-900 dark:text-gray-50">
               Welcome Back
@@ -91,7 +82,7 @@ export default function LoginPage() {
             {/* Google OAuth Button */}
             <Button
               variant="outline"
-              className="w-full h-11 gap-3 font-medium border-gray-300 hover:bg-gray-50 transition-all"
+              className="w-full h-12 gap-3 font-medium border-gray-300 hover:bg-gray-50 transition-all rounded-xl"
               onClick={handleGoogleLogin}
             >
               <Image
@@ -118,11 +109,11 @@ export default function LoginPage() {
               <div className="space-y-2">
                 <Label className="text-sm font-medium">Email Address</Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Mail className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
                   <Input
                     type="email"
                     placeholder="name@example.com"
-                    className="pl-10 h-11"
+                    className="pl-10 h-12 rounded-xl"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
                     required
@@ -141,11 +132,11 @@ export default function LoginPage() {
                   </Link>
                 </div>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Lock className="absolute left-3 top-3.5 h-4 w-4 text-muted-foreground" />
                   <Input
                     type="password"
                     placeholder="••••••••"
-                    className="pl-10 h-11"
+                    className="pl-10 h-12 rounded-xl"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
@@ -154,7 +145,8 @@ export default function LoginPage() {
               </div>
 
               <Button
-                className="w-full bg-sky-600 hover:bg-sky-700 h-12 text-white font-semibold shadow-md transition-all hover:-translate-y-0.5 active:translate-y-0"
+                type="submit"
+                className="w-full bg-sky-600 hover:bg-sky-700 h-12 text-white font-semibold shadow-md transition-all hover:-translate-y-0.5 active:translate-y-0 rounded-xl"
                 disabled={loading}
               >
                 {loading ? (
@@ -183,6 +175,3 @@ export default function LoginPage() {
     </>
   );
 }
-
-// Note: Re-import Label if it's used; otherwise, the simple HTML label or a custom one works too.
-import { Label } from "@/components/ui/label";

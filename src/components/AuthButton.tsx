@@ -1,7 +1,6 @@
 "use client";
 
-import { supabase } from "@/lib/supabaseClient";
-import { useEffect, useState } from "react";
+import { useAuth } from "@/lib/useAuth";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,57 +9,43 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { User, LogOut, LayoutDashboard, Settings } from "lucide-react";
+import { User, LogOut, LayoutDashboard, Loader2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "./ui/button";
 
 export default function AuthButtons() {
-  const [user, setUser] = useState<any>(null);
-  const [isAdmin, setIsAdmin] = useState(false);
+  const { user, isLoading, isAdmin, signInWithGoogle, signOut } = useAuth();
 
-  useEffect(() => {
-    const fetchUser = async () => {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-      setUser(user);
-
-      if (user) {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("role")
-          .eq("id", user.id)
-          .single();
-        setIsAdmin(profile?.role === "admin");
-      }
-    };
-
-    fetchUser();
-
-    const { data: authListener } = supabase.auth.onAuthStateChange(
-      (_event, session) => {
-        setUser(session?.user ?? null);
-      },
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center w-10 h-10">
+        <Loader2 className="w-5 h-5 animate-spin text-sky-600" />
+      </div>
     );
-
-    return () => {
-      authListener?.subscription.unsubscribe();
-    };
-  }, []);
-
-  async function handleLogin() {
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: { redirectTo: `${window.location.origin}/auth/callback` },
-    });
   }
 
-  // FIX: Robust Avatar detection
+  // Robust Avatar detection
   const avatarUrl =
     user?.user_metadata?.avatar_url || user?.user_metadata?.picture || null;
   const displayName =
-    user?.user_metadata?.full_name || user?.email?.split("@")[0];
+    user?.user_metadata?.full_name || user?.email?.split("@")[0] || "User";
+
+  const handleLogin = async () => {
+    try {
+      await signInWithGoogle();
+    } catch (error) {
+      console.error("Login error:", error);
+    }
+  };
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+    } catch (error) {
+      console.error("Sign out error:", error);
+    }
+  };
 
   return (
     <div className="flex items-center gap-4">
@@ -110,7 +95,7 @@ export default function AuthButtons() {
             )}
             <DropdownMenuItem
               className="rounded-lg py-2.5 cursor-pointer text-red-600 focus:bg-red-50 focus:text-red-700"
-              onClick={() => supabase.auth.signOut()}
+              onClick={handleSignOut}
             >
               <LogOut className="mr-2 h-4 w-4" /> Sign Out
             </DropdownMenuItem>

@@ -5,25 +5,12 @@ import Image from "next/image";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { Tag, MapPin, Calendar, Building2 } from "lucide-react";
+import { Tag, MapPin, Calendar, Building2, AlertTriangle } from "lucide-react";
 import { Opportunity } from "@/types/database";
+import { isExpired, getDeadlineStatus } from "@/lib/opportunityHelpers";
 
 type OpportunityCardProps = {
   data: Opportunity;
-};
-
-// Helper to determine the status badge color
-const getDeadlineStatus = (deadline: string | null) => {
-  if (!deadline) return null;
-  const daysLeft = Math.ceil(
-    (new Date(deadline).getTime() - new Date().getTime()) /
-      (1000 * 60 * 60 * 24),
-  );
-
-  if (daysLeft < 0) return { label: "Expired", color: "bg-red-600" };
-  if (daysLeft <= 7)
-    return { label: `${daysLeft} days left`, color: "bg-orange-500" };
-  return { label: `${daysLeft} days left`, color: "bg-green-600" };
 };
 
 // Helper to extract a tertiary detail based on type
@@ -32,30 +19,52 @@ const getTypeDetail = (data: Opportunity) => {
 
   switch (data.type) {
     case "internship":
-      return details.stipend ? `💰 ${details.stipend}` : "Internship";
+      return details?.stipend ? `💰 ${details.stipend}` : "Internship";
     case "scholarship":
-      return details.degree ? `🎓 ${details.degree}` : "Scholarship";
+      return details?.degree ? `🎓 ${details.degree}` : "Scholarship";
     case "competition":
-      return details.prizes ? `🏆 Prize: ${details.prizes[0]}` : "Competition";
+      return details?.prizes?.[0] ? `🏆 ${details.prizes[0]}` : "Competition";
+    case "fellowship":
+      return details?.fellowship_value ? `💵 ${details.fellowship_value}` : "Fellowship";
+    case "online_course":
+      return details?.cost_type === "free" ? "🆓 Free" : "Online Course";
     default:
       return data.type.replace("_", " ");
   }
 };
 
+// Get the correct URL path for the opportunity type
+const getOpportunityPath = (type: string) => {
+  const pathMap: Record<string, string> = {
+    scholarship: "/scholarships",
+    internship: "/internships",
+    fellowship: "/fellowships",
+    competition: "/competitions",
+    conference: "/conferences",
+    workshop: "/workshops",
+    exchange_program: "/exchange_programs",
+    online_course: "/online_courses",
+    job: "/jobs",
+  };
+  return pathMap[type] || "/opportunities";
+};
+
 export const OpportunityCard = ({ data }: OpportunityCardProps) => {
+  const expired = isExpired(data.deadline);
   const status = getDeadlineStatus(data.deadline);
 
   return (
-    // Note: URL structure assumes /opportunities/[slug] or /[type]/[slug]
     <Link
-      href={`/${data.type}s/${data.id}`}
+      href={`${getOpportunityPath(data.type)}/${data.id}`}
       className="no-underline h-full group outline-none block"
     >
       <Card
         className={cn(
           "h-full flex flex-col overflow-hidden bg-white dark:bg-neutral-900 border-border/60 shadow-sm",
           "transition-all duration-300 ease-in-out",
-          "hover:shadow-lg hover:-translate-y-1 hover:border-sky-500/50",
+          expired
+            ? "opacity-70 grayscale hover:opacity-90 hover:grayscale-0"
+            : "hover:shadow-lg hover:-translate-y-1 hover:border-sky-500/50"
         )}
       >
         {/* Image Section */}
@@ -64,18 +73,43 @@ export const OpportunityCard = ({ data }: OpportunityCardProps) => {
             src={data.image_url || "/placeholder.jpg"}
             alt={data.title}
             fill
-            className="object-cover transition-transform duration-500 group-hover:scale-105"
+            className={cn(
+              "object-cover transition-transform duration-500",
+              !expired && "group-hover:scale-105"
+            )}
             sizes="(max-width: 768px) 100vw, 300px"
           />
+
+          {/* Expired Overlay */}
+          {expired && (
+            <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+              <Badge className="bg-red-600 text-white text-sm px-4 py-1.5 font-bold">
+                <AlertTriangle className="w-4 h-4 mr-1.5" />
+                Expired
+              </Badge>
+            </div>
+          )}
+
           {/* Floating Type Badge */}
-          <div className="absolute top-3 left-3">
-            <Badge
-              variant="secondary"
-              className="backdrop-blur-md bg-white/90 text-black capitalize shadow-sm"
-            >
-              {data.type.replace("_", " ")}
-            </Badge>
-          </div>
+          {!expired && (
+            <div className="absolute top-3 left-3">
+              <Badge
+                variant="secondary"
+                className="backdrop-blur-md bg-white/90 text-black capitalize shadow-sm"
+              >
+                {data.type.replace("_", " ")}
+              </Badge>
+            </div>
+          )}
+
+          {/* Featured Badge */}
+          {data.is_featured && !expired && (
+            <div className="absolute top-3 right-3">
+              <Badge className="bg-gradient-to-r from-amber-500 to-orange-500 text-white border-none shadow-lg">
+                ⭐ Featured
+              </Badge>
+            </div>
+          )}
         </div>
 
         {/* Content Section */}
@@ -87,7 +121,14 @@ export const OpportunityCard = ({ data }: OpportunityCardProps) => {
                 {data.organization}
               </span>
             </div>
-            <h3 className="font-bold text-lg leading-tight text-gray-900 dark:text-gray-100 line-clamp-2 group-hover:text-sky-600 transition-colors">
+            <h3
+              className={cn(
+                "font-bold text-lg leading-tight line-clamp-2 transition-colors",
+                expired
+                  ? "text-gray-500"
+                  : "text-gray-900 dark:text-gray-100 group-hover:text-sky-600"
+              )}
+            >
               {data.title}
             </h3>
           </div>
@@ -113,7 +154,13 @@ export const OpportunityCard = ({ data }: OpportunityCardProps) => {
             {/* Deadline Badge */}
             {status && (
               <div className="flex items-center justify-end">
-                <Badge className={cn("text-white font-normal", status.color)}>
+                <Badge
+                  className={cn(
+                    "font-medium",
+                    status.bgColor,
+                    status.color
+                  )}
+                >
                   <Calendar className="w-3 h-3 mr-1.5" />
                   {status.label}
                 </Badge>
