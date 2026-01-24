@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import HeroSection from "@/components/HeroSection";
 import GlobalSearch from "@/components/GlobalSearch";
 import OpportunityTabs from "@/components/OpportunityTabs";
-import BannerSlider from "@/components/BannerSlider"; // Import the slider component
 
 export const metadata: Metadata = {
   title:
@@ -63,19 +62,19 @@ export default function HomePage() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
 
-      <main className="space-y-16 pb-20">
-        {/* The BannerSlider fetches data from your 'banners' table */}
-        {/*<section className="container mx-auto px-4 pt-6">
-          <BannerSlider />
-        </section>*/}
-
+      <main className="space-y-8 sm:space-y-12 md:space-y-16 pb-12 sm:pb-16 md:pb-20">
+        {/* Hero Section - Full width, no padding */}
         <HeroSection />
 
-        <section className="-mt-10 mb-10">
+        {/* Search - Overlapping hero on larger screens */}
+        <section className="relative z-20 -mt-8 sm:-mt-12 md:-mt-16">
           <GlobalSearch />
         </section>
 
-        <OpportunityTabs />
+        {/* Opportunities */}
+        <section className="pt-4 sm:pt-8">
+          <OpportunityTabs />
+        </section>
       </main>
     </>
   );

@@ -1,23 +1,19 @@
-/** @type {import('next').NextConfig} */
-const nextConfig = {
+import type { NextConfig } from 'next';
+
+const nextConfig: NextConfig = {
   images: {
-    unoptimized: true, // Likely needed if you use very broad patterns
+    unoptimized: true,
     remotePatterns: [
       {
-        protocol: 'http', // Include http if you need to support it
-        hostname: '**', // THIS ALLOWS *ANY* HOSTNAME. USE WITH EXTREME CAUTION.
-        port: '',
-        pathname: '**', // THIS ALLOWS *ANY* PATH. USE WITH EXTREME CAUTION.
+        protocol: 'http',
+        hostname: '**',
       },
       {
         protocol: 'https',
-        hostname: '**', // THIS ALLOWS *ANY* HOSTNAME. USE WITH EXTREME CAUTION.
-        port: '',
-        pathname: '**', // THIS ALLOWS *ANY* PATH. USE WITH EXTREME CAUTION.
+        hostname: '**',
       },
     ],
   },
-  // Other Next.js configurations
 };
 
-module.exports = nextConfig;
+export default nextConfig;
