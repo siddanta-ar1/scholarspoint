@@ -56,9 +56,9 @@ export function useAuth() {
         }
     }, []);
 
-    // Centralized state updater
+    // Centralized state updater that respects previous state
     const refreshAuthState = useCallback(
-        async (session: Session | null) => {
+        async (session: Session | null, eventType?: string) => {
             if (!mounted.current) return;
 
             if (!session?.user) {
@@ -72,46 +72,45 @@ export function useAuth() {
                 return;
             }
 
-            // We have a user, now get the profile
-            // Keep loading true if this is an initial load, but if it's an update, maybe not needed?
-            // Actually best to show loading if we are transitioning from no-user to user
-            // But for updates, we might want to be smoother.
-            // For now, let's just fetch profile.
+            // Optimization: If we already have this user loaded, DON'T show global loading spinner
+            // This prevents the flickering when tab focus triggers validation
+            const isSameUser = authState.user?.id === session.user.id;
 
+            // Only set loading if we don't have a user yet, or if it's an explicit sign-in event from no-auth
+            if (!isSameUser) {
+                setAuthState(prev => ({ ...prev, isLoading: true }));
+            }
+
+            // Fetch profile (in background if it's just a refresh)
             const profile = await fetchProfile(session.user.id);
 
             if (mounted.current) {
                 setAuthState({
                     user: session.user,
                     session,
-                    isLoading: false,
+                    isLoading: false, // Always done loading here
                     isAdmin: profile?.role === "admin",
                     profile,
                 });
             }
         },
-        [fetchProfile]
+        [fetchProfile, authState.user?.id] // Depend on current user ID for comparison
     );
 
     useEffect(() => {
         mounted.current = true;
 
+        // 1. Initial Load
         const initializeAuth = async () => {
             try {
-                // 1. Get Initial Session with timeout
                 const sessionPromise = supabase.auth.getSession();
-                const timeoutPromise = new Promise<{
-                    data: { session: null };
-                    error: any;
-                }>((_, reject) =>
+                const timeoutPromise = new Promise<{ data: { session: null }; error: any }>((_, reject) =>
                     setTimeout(() => reject(new Error("Auth init timed out")), 4000)
                 );
 
-                const {
-                    data: { session },
-                } = (await Promise.race([sessionPromise, timeoutPromise])) as any;
+                const { data: { session } } = (await Promise.race([sessionPromise, timeoutPromise])) as any;
 
-                await refreshAuthState(session);
+                await refreshAuthState(session, 'INITIAL_LOAD');
             } catch (error) {
                 console.error("Auth initialization failed:", error);
                 if (mounted.current) {
@@ -122,20 +121,12 @@ export function useAuth() {
 
         initializeAuth();
 
-        // 2. Set up listener
-        const {
-            data: { subscription },
-        } = supabase.auth.onAuthStateChange(async (event, session) => {
-            // Logic: If the session changed, we need to refresh.
-            // 'SIGNED_IN', 'SIGNED_OUT', 'TOKEN_REFRESHED', etc.
-            // We pass the new session to our centralized handler
+        // 2. Subscription Listener
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
             if (mounted.current) {
-                // If we are signing in, we might want to show loading
-                if (event === 'SIGNED_IN') {
-                    setAuthState(prev => ({ ...prev, isLoading: true }));
-                }
-
-                await refreshAuthState(session);
+                // Skip updating if it's just a token refresh and we have the same user
+                // But we still want to update the session object in state
+                await refreshAuthState(session, event);
             }
         });
 
@@ -143,55 +134,103 @@ export function useAuth() {
             mounted.current = false;
             subscription.unsubscribe();
         };
-    }, [refreshAuthState]);
+    }, []); // Empty dependency array for init logic
 
-    // Auth actions
+    // Separate effect for refreshAuthState when it changes due to closure?
+    // Actually onAuthStateChange is set up once. The closure inside it will have stale `refreshAuthState` if we are not careful.
+    // HOWEVER, supabase listener should probably call a ref-stable function or use a ref for state comparison.
+    // A cleaner way for the comparison:
+    // Instead of relying on `authState` closure inside the listener (which is stale),
+    // we can pass the logic to `setAuthState` functional update or just check session IDs.
+
+    // Actually, I should use a Ref to hold the current user ID so the listener can check it without recreating the listener.
+    const currentUserIdRef = useRef<string | null>(null);
+
+    // Sync ref
+    useEffect(() => {
+        currentUserIdRef.current = authState.user?.id || null;
+    }, [authState.user?.id]);
+
+    // Re-write initialize/listener to use the Ref for comparison
+    useEffect(() => {
+        mounted.current = true;
+
+        const performUpdate = async (session: Session | null) => {
+            if (!session?.user) {
+                if (mounted.current) {
+                    setAuthState({
+                        user: null, session: null, isLoading: false, isAdmin: false, profile: null
+                    });
+                }
+                return;
+            }
+
+            const isSamgeUser = currentUserIdRef.current === session.user.id;
+            // Only set loading true if it's a DIFFERENT user
+            if (!isSamgeUser && mounted.current) {
+                setAuthState(prev => ({ ...prev, isLoading: true }));
+            }
+
+            const profile = await fetchProfile(session.user.id);
+
+            if (mounted.current) {
+                setAuthState({
+                    user: session.user,
+                    session,
+                    isLoading: false,
+                    isAdmin: profile?.role === "admin",
+                    profile
+                });
+            }
+        };
+
+        // Init
+        const init = async () => {
+            try {
+                const { data: { session } } = await supabase.auth.getSession();
+                await performUpdate(session);
+            } catch (e) {
+                console.error(e);
+                if (mounted.current) setAuthState(prev => ({ ...prev, isLoading: false }));
+            }
+        };
+        init();
+
+        // Listener
+        const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+            performUpdate(session);
+        });
+
+        return () => {
+            mounted.current = false;
+            subscription.unsubscribe();
+        };
+    }, [fetchProfile]); // Only depend on stable fetchProfile
+
+    // Auth actions (unchanged)
     const signOut = useCallback(async () => {
         await supabase.auth.signOut();
-        // State update will happen via onAuthStateChange -> refreshAuthState
     }, []);
 
     const signInWithGoogle = useCallback(async () => {
         const { error } = await supabase.auth.signInWithOAuth({
             provider: "google",
-            options: {
-                redirectTo: `${window.location.origin}/auth/callback`,
-            },
+            options: { redirectTo: `${window.location.origin}/auth/callback` },
         });
         if (error) throw error;
     }, []);
 
-    const signInWithEmail = useCallback(
-        async (email: string, password: string) => {
-            const { error } = await supabase.auth.signInWithPassword({
-                email,
-                password,
-            });
-            if (error) throw error;
-        },
-        []
-    );
+    const signInWithEmail = useCallback(async (email: string, password: string) => {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+    }, []);
 
-    const signUpWithEmail = useCallback(
-        async (email: string, password: string, fullName?: string) => {
-            const { error } = await supabase.auth.signUp({
-                email,
-                password,
-                options: {
-                    data: { full_name: fullName },
-                    emailRedirectTo: `${window.location.origin}/auth/callback`,
-                },
-            });
-            if (error) throw error;
-        },
-        []
-    );
+    const signUpWithEmail = useCallback(async (email: string, password: string, fullName?: string) => {
+        const { error } = await supabase.auth.signUp({
+            email, password, options: { data: { full_name: fullName }, emailRedirectTo: `${window.location.origin}/auth/callback` },
+        });
+        if (error) throw error;
+    }, []);
 
-    return {
-        ...authState,
-        signOut,
-        signInWithGoogle,
-        signInWithEmail,
-        signUpWithEmail,
-    };
+    return { ...authState, signOut, signInWithGoogle, signInWithEmail, signUpWithEmail };
 }
