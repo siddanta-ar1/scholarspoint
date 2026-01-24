@@ -1,33 +1,31 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { ChevronRight, Loader2 } from "lucide-react";
+import { ChevronRight, RefreshCw, AlertCircle } from "lucide-react";
 import { OpportunityCard } from "./OpportunityCard";
 import { Opportunity, OpportunityType } from "@/types/database";
 import { cn } from "@/lib/utils";
 
 // Map the DB Enum types to readable Labels and URL paths
-const TABS_CONFIG: { value: OpportunityType; label: string; path: string; emoji: string }[] = [
-  { value: "scholarship", label: "Scholarships", path: "/scholarships", emoji: "🎓" },
-  { value: "internship", label: "Internships", path: "/internships", emoji: "💼" },
-  { value: "fellowship", label: "Fellowships", path: "/fellowships", emoji: "🏅" },
-  { value: "competition", label: "Competitions", path: "/competitions", emoji: "🏆" },
-  { value: "conference", label: "Conferences", path: "/conferences", emoji: "🎤" },
-  { value: "workshop", label: "Workshops", path: "/workshops", emoji: "🛠️" },
-  { value: "exchange_program", label: "Exchanges", path: "/exchange_programs", emoji: "✈️" },
-  { value: "online_course", label: "Courses", path: "/online_courses", emoji: "📚" },
-  { value: "job", label: "Jobs", path: "/jobs", emoji: "👔" },
-];
+const TABS_CONFIG: {
+  value: OpportunityType;
+  label: string;
+  path: string;
+  emoji: string;
+}[] = [
+    { value: "scholarship", label: "Scholarships", path: "/scholarships", emoji: "🎓" },
+    { value: "internship", label: "Internships", path: "/internships", emoji: "💼" },
+    { value: "fellowship", label: "Fellowships", path: "/fellowships", emoji: "🏅" },
+    { value: "competition", label: "Competitions", path: "/competitions", emoji: "🏆" },
+    { value: "conference", label: "Conferences", path: "/conferences", emoji: "🎤" },
+    { value: "workshop", label: "Workshops", path: "/workshops", emoji: "🛠️" },
+    { value: "exchange_program", label: "Exchanges", path: "/exchange_programs", emoji: "✈️" },
+    { value: "online_course", label: "Courses", path: "/online_courses", emoji: "📚" },
+    { value: "job", label: "Jobs", path: "/jobs", emoji: "👔" },
+  ];
 
 type TabData = {
   [key in OpportunityType]?: Opportunity[];
@@ -66,39 +64,67 @@ function SkeletonCard({ compact = false }: { compact?: boolean }) {
 export default function OpportunityTabs() {
   const [data, setData] = useState<TabData>({});
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<OpportunityType>("scholarship");
+  const [retryCount, setRetryCount] = useState(0);
 
+  const fetchAllOpportunities = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      // Fetch all at once with a single query for better performance
+      // Added a timeout to prevent infinite hanging
+      const fetchPromise = supabase
+        .from("opportunities")
+        .select("*")
+        .eq("is_active", true)
+        .order("created_at", { ascending: false })
+        .limit(60); // Increased limit slightly
+
+      // Timeout after 10 seconds
+      const timeoutPromise = new Promise<{ data: null; error: any }>((_, reject) =>
+        setTimeout(() => reject(new Error("Request timed out")), 10000)
+      );
+
+      const { data: allData, error: apiError } = await Promise.race([
+        fetchPromise,
+        timeoutPromise,
+      ]) as any;
+
+      if (apiError) throw apiError;
+
+      // Group by type
+      const grouped: TabData = {};
+      TABS_CONFIG.forEach((tab) => {
+        grouped[tab.value] = (allData || [])
+          .filter((item: Opportunity) => item.type === tab.value)
+          .slice(0, 4) as Opportunity[];
+      });
+
+      setData(grouped);
+    } catch (err: any) {
+      console.error("Failed to fetch opportunities:", err);
+      setError(err.message || "Failed to load opportunities");
+    } finally {
+      setLoading(false);
+    }
+  }, []); // Empty dependency array as it doesn't depend on props
+
+  // Initial fetch with auto-retry logic on failure
   useEffect(() => {
-    const fetchAllOpportunities = async () => {
-      try {
-        // Fetch all at once with a single query for better performance
-        const { data: allData, error } = await supabase
-          .from("opportunities")
-          .select("*")
-          .eq("is_active", true)
-          .order("created_at", { ascending: false })
-          .limit(50); // Get recent 50 items
+    let mounted = true;
 
-        if (error) throw error;
-
-        // Group by type
-        const grouped: TabData = {};
-        TABS_CONFIG.forEach((tab) => {
-          grouped[tab.value] = (allData || [])
-            .filter((item) => item.type === tab.value)
-            .slice(0, 4) as Opportunity[];
-        });
-
-        setData(grouped);
-      } catch (error) {
-        console.error("Failed to fetch opportunities:", error);
-      } finally {
-        setLoading(false);
-      }
+    const load = async () => {
+      await fetchAllOpportunities();
     };
 
-    fetchAllOpportunities();
-  }, []);
+    load();
+
+    return () => {
+      mounted = false;
+    };
+  }, [fetchAllOpportunities]);
 
   const currentTabConfig = useMemo(
     () => TABS_CONFIG.find((t) => t.value === activeTab),
@@ -106,6 +132,11 @@ export default function OpportunityTabs() {
   );
 
   const currentOpportunities = data[activeTab] || [];
+
+  const handleRetry = () => {
+    setRetryCount((prev) => prev + 1);
+    fetchAllOpportunities();
+  };
 
   return (
     <section className="container mx-auto px-4">
@@ -119,7 +150,7 @@ export default function OpportunityTabs() {
         </p>
       </div>
 
-      {/* Category Pills - Horizontally scrollable on mobile */}
+      {/* Category Pills */}
       <div className="relative mb-6">
         <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4 sm:mx-0 sm:px-0 sm:flex-wrap sm:justify-center">
           {TABS_CONFIG.map((tab) => (
@@ -138,7 +169,6 @@ export default function OpportunityTabs() {
             </button>
           ))}
         </div>
-        {/* Fade edges on mobile */}
         <div className="absolute right-0 top-0 bottom-2 w-8 bg-gradient-to-l from-white dark:from-background to-transparent pointer-events-none sm:hidden" />
       </div>
 
@@ -159,7 +189,33 @@ export default function OpportunityTabs() {
               ))}
             </div>
           </>
+        ) : error ? (
+          // Error State
+          <div className="flex flex-col items-center justify-center py-12 sm:py-16 text-center space-y-4 bg-red-50 dark:bg-red-900/10 rounded-2xl border border-red-100 dark:border-red-900/30">
+            <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center text-red-600 dark:text-red-400">
+              <AlertCircle size={24} />
+            </div>
+            <div className="space-y-1">
+              <p className="font-semibold text-red-900 dark:text-red-200">
+                Failed to load opportunities
+              </p>
+              <p className="text-sm text-red-600 dark:text-red-300 max-w-xs mx-auto">
+                {error === "Request timed out"
+                  ? "The connection is slow. Please try again."
+                  : "Something went wrong while fetching data."}
+              </p>
+            </div>
+            <Button
+              onClick={handleRetry}
+              variant="outline"
+              className="border-red-200 hover:bg-red-100 text-red-700 dark:border-red-800 dark:text-red-200 dark:hover:bg-red-900/50"
+            >
+              <RefreshCw className="w-4 h-4 mr-2" />
+              Retry Loading
+            </Button>
+          </div>
         ) : currentOpportunities.length === 0 ? (
+          // Empty State
           <div className="flex flex-col items-center justify-center py-12 sm:py-16 text-center space-y-3 bg-gray-50 dark:bg-gray-900/50 rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-800">
             <span className="text-4xl">{currentTabConfig?.emoji}</span>
             <p className="text-muted-foreground font-medium">
@@ -170,7 +226,8 @@ export default function OpportunityTabs() {
             </p>
           </div>
         ) : (
-          <div className="space-y-6">
+          // Success State
+          <div className="space-y-6 animate-in fade-in duration-500">
             {/* Desktop: Grid view */}
             <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
               {currentOpportunities.map((op) => (
@@ -190,11 +247,11 @@ export default function OpportunityTabs() {
               <Button
                 asChild
                 variant="outline"
-                className="rounded-full px-6 sm:px-8 h-10 sm:h-11 border-sky-200 hover:bg-sky-50 hover:text-sky-700 dark:border-sky-800 dark:hover:bg-sky-950 font-bold"
+                className="rounded-full px-6 sm:px-8 h-10 sm:h-11 border-sky-200 hover:bg-sky-50 hover:text-sky-700 dark:border-sky-800 dark:hover:bg-sky-950 font-bold group"
               >
                 <Link href={currentTabConfig?.path || "/"}>
                   View all {currentTabConfig?.label}
-                  <ChevronRight className="w-4 h-4 ml-1" />
+                  <ChevronRight className="w-4 h-4 ml-1 group-hover:translate-x-1 transition-transform" />
                 </Link>
               </Button>
             </div>

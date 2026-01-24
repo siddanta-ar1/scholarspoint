@@ -27,44 +27,78 @@ export function useAuth() {
     });
 
     const fetchProfile = useCallback(async (userId: string) => {
-        const { data: profile } = await supabase
-            .from("profiles")
-            .select("id, email, full_name, role")
-            .eq("id", userId)
-            .single();
+        try {
+            // Profile fetch with timeout to prevent infinite loading
+            const profilePromise = supabase
+                .from("profiles")
+                .select("id, email, full_name, role")
+                .eq("id", userId)
+                .single();
 
-        return profile;
+            const timeoutPromise = new Promise<{ data: null; error: any }>((resolve) =>
+                setTimeout(() => resolve({ data: null, error: "Profile fetch timed out" }), 5000)
+            );
+
+            const { data: profile } = await Promise.race([
+                profilePromise,
+                timeoutPromise
+            ]) as any;
+
+            return profile;
+        } catch (error) {
+            console.error("Error fetching profile:", error);
+            return null;
+        }
     }, []);
 
     useEffect(() => {
+        let mounted = true;
+
         // Get initial session
         const initializeAuth = async () => {
             try {
+                // Session fetch with timeout
+                const sessionPromise = supabase.auth.getSession();
+                const timeoutPromise = new Promise<{ data: { session: null }; error: any }>((_, reject) =>
+                    setTimeout(() => reject(new Error("Auth initialization timed out")), 5000)
+                );
+
                 const {
                     data: { session },
-                } = await supabase.auth.getSession();
+                } = await Promise.race([sessionPromise, timeoutPromise]) as any;
+
+                if (!mounted) return;
 
                 if (session?.user) {
+                    // If we have a session, try to get the profile
+                    // But don't let a slow profile fetch block the UI forever
                     const profile = await fetchProfile(session.user.id);
-                    setAuthState({
-                        user: session.user,
-                        session,
-                        isLoading: false,
-                        isAdmin: profile?.role === "admin",
-                        profile,
-                    });
+
+                    if (mounted) {
+                        setAuthState({
+                            user: session.user,
+                            session,
+                            isLoading: false,
+                            isAdmin: profile?.role === "admin",
+                            profile,
+                        });
+                    }
                 } else {
-                    setAuthState({
-                        user: null,
-                        session: null,
-                        isLoading: false,
-                        isAdmin: false,
-                        profile: null,
-                    });
+                    if (mounted) {
+                        setAuthState({
+                            user: null,
+                            session: null,
+                            isLoading: false,
+                            isAdmin: false,
+                            profile: null,
+                        });
+                    }
                 }
             } catch (error) {
                 console.error("Auth initialization error:", error);
-                setAuthState((prev) => ({ ...prev, isLoading: false }));
+                if (mounted) {
+                    setAuthState((prev) => ({ ...prev, isLoading: false }));
+                }
             }
         };
 
@@ -74,27 +108,36 @@ export function useAuth() {
         const {
             data: { subscription },
         } = supabase.auth.onAuthStateChange(async (event, session) => {
+            if (!mounted) return;
+
             if (session?.user) {
+                setAuthState(prev => ({ ...prev, isLoading: true }));
                 const profile = await fetchProfile(session.user.id);
-                setAuthState({
-                    user: session.user,
-                    session,
-                    isLoading: false,
-                    isAdmin: profile?.role === "admin",
-                    profile,
-                });
+
+                if (mounted) {
+                    setAuthState({
+                        user: session.user,
+                        session,
+                        isLoading: false,
+                        isAdmin: profile?.role === "admin",
+                        profile,
+                    });
+                }
             } else {
-                setAuthState({
-                    user: null,
-                    session: null,
-                    isLoading: false,
-                    isAdmin: false,
-                    profile: null,
-                });
+                if (mounted) {
+                    setAuthState({
+                        user: null,
+                        session: null,
+                        isLoading: false,
+                        isAdmin: false,
+                        profile: null,
+                    });
+                }
             }
         });
 
         return () => {
+            mounted = false;
             subscription.unsubscribe();
         };
     }, [fetchProfile]);
