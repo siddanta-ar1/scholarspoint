@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import type { User, Session } from "@supabase/supabase-js";
 
@@ -26,9 +26,11 @@ export function useAuth() {
         profile: null,
     });
 
+    const mounted = useRef(false);
+
+    // robust profile fetch with timeout
     const fetchProfile = useCallback(async (userId: string) => {
         try {
-            // Profile fetch with timeout to prevent infinite loading
             const profilePromise = supabase
                 .from("profiles")
                 .select("id, email, full_name, role")
@@ -36,13 +38,16 @@ export function useAuth() {
                 .single();
 
             const timeoutPromise = new Promise<{ data: null; error: any }>((resolve) =>
-                setTimeout(() => resolve({ data: null, error: "Profile fetch timed out" }), 5000)
+                setTimeout(
+                    () => resolve({ data: null, error: "Profile fetch timed out" }),
+                    4000
+                )
             );
 
-            const { data: profile } = await Promise.race([
+            const { data: profile } = (await Promise.race([
                 profilePromise,
-                timeoutPromise
-            ]) as any;
+                timeoutPromise,
+            ])) as any;
 
             return profile;
         } catch (error) {
@@ -51,52 +56,65 @@ export function useAuth() {
         }
     }, []);
 
-    useEffect(() => {
-        let mounted = true;
+    // Centralized state updater
+    const refreshAuthState = useCallback(
+        async (session: Session | null) => {
+            if (!mounted.current) return;
 
-        // Get initial session
+            if (!session?.user) {
+                setAuthState({
+                    user: null,
+                    session: null,
+                    isLoading: false,
+                    isAdmin: false,
+                    profile: null,
+                });
+                return;
+            }
+
+            // We have a user, now get the profile
+            // Keep loading true if this is an initial load, but if it's an update, maybe not needed?
+            // Actually best to show loading if we are transitioning from no-user to user
+            // But for updates, we might want to be smoother.
+            // For now, let's just fetch profile.
+
+            const profile = await fetchProfile(session.user.id);
+
+            if (mounted.current) {
+                setAuthState({
+                    user: session.user,
+                    session,
+                    isLoading: false,
+                    isAdmin: profile?.role === "admin",
+                    profile,
+                });
+            }
+        },
+        [fetchProfile]
+    );
+
+    useEffect(() => {
+        mounted.current = true;
+
         const initializeAuth = async () => {
             try {
-                // Session fetch with timeout
+                // 1. Get Initial Session with timeout
                 const sessionPromise = supabase.auth.getSession();
-                const timeoutPromise = new Promise<{ data: { session: null }; error: any }>((_, reject) =>
-                    setTimeout(() => reject(new Error("Auth initialization timed out")), 5000)
+                const timeoutPromise = new Promise<{
+                    data: { session: null };
+                    error: any;
+                }>((_, reject) =>
+                    setTimeout(() => reject(new Error("Auth init timed out")), 4000)
                 );
 
                 const {
                     data: { session },
-                } = await Promise.race([sessionPromise, timeoutPromise]) as any;
+                } = (await Promise.race([sessionPromise, timeoutPromise])) as any;
 
-                if (!mounted) return;
-
-                if (session?.user) {
-                    // If we have a session, try to get the profile
-                    // But don't let a slow profile fetch block the UI forever
-                    const profile = await fetchProfile(session.user.id);
-
-                    if (mounted) {
-                        setAuthState({
-                            user: session.user,
-                            session,
-                            isLoading: false,
-                            isAdmin: profile?.role === "admin",
-                            profile,
-                        });
-                    }
-                } else {
-                    if (mounted) {
-                        setAuthState({
-                            user: null,
-                            session: null,
-                            isLoading: false,
-                            isAdmin: false,
-                            profile: null,
-                        });
-                    }
-                }
+                await refreshAuthState(session);
             } catch (error) {
-                console.error("Auth initialization error:", error);
-                if (mounted) {
+                console.error("Auth initialization failed:", error);
+                if (mounted.current) {
                     setAuthState((prev) => ({ ...prev, isLoading: false }));
                 }
             }
@@ -104,47 +122,33 @@ export function useAuth() {
 
         initializeAuth();
 
-        // Listen for auth changes
+        // 2. Set up listener
         const {
             data: { subscription },
         } = supabase.auth.onAuthStateChange(async (event, session) => {
-            if (!mounted) return;
-
-            if (session?.user) {
-                setAuthState(prev => ({ ...prev, isLoading: true }));
-                const profile = await fetchProfile(session.user.id);
-
-                if (mounted) {
-                    setAuthState({
-                        user: session.user,
-                        session,
-                        isLoading: false,
-                        isAdmin: profile?.role === "admin",
-                        profile,
-                    });
+            // Logic: If the session changed, we need to refresh.
+            // 'SIGNED_IN', 'SIGNED_OUT', 'TOKEN_REFRESHED', etc.
+            // We pass the new session to our centralized handler
+            if (mounted.current) {
+                // If we are signing in, we might want to show loading
+                if (event === 'SIGNED_IN') {
+                    setAuthState(prev => ({ ...prev, isLoading: true }));
                 }
-            } else {
-                if (mounted) {
-                    setAuthState({
-                        user: null,
-                        session: null,
-                        isLoading: false,
-                        isAdmin: false,
-                        profile: null,
-                    });
-                }
+
+                await refreshAuthState(session);
             }
         });
 
         return () => {
-            mounted = false;
+            mounted.current = false;
             subscription.unsubscribe();
         };
-    }, [fetchProfile]);
+    }, [refreshAuthState]);
 
     // Auth actions
     const signOut = useCallback(async () => {
         await supabase.auth.signOut();
+        // State update will happen via onAuthStateChange -> refreshAuthState
     }, []);
 
     const signInWithGoogle = useCallback(async () => {
