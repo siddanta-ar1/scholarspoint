@@ -68,12 +68,12 @@ module.exports = {
     }
 
     // Medium priority for static pages
-    const staticPages = ['/about', '/contact', '/privacy', '/terms'];
+    const staticPages = ['/about', '/contact', '/privacy', '/terms', '/faq', '/how-it-works'];
     if (staticPages.includes(path)) {
       return {
         loc: path,
         changefreq: 'monthly',
-        priority: 0.5,
+        priority: 0.6,
         lastmod: new Date().toISOString(),
       };
     }

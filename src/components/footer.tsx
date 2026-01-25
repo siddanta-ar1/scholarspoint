@@ -46,6 +46,47 @@ export function Footer() {
             <ul className="space-y-1">
               <li>
                 <Link
+                  href="/scholarships"
+                  className="hover:text-blue-600 transition-colors"
+                >
+                  Scholarships
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/blogs"
+                  className="hover:text-blue-600 transition-colors"
+                >
+                  Blog
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/faq"
+                  className="hover:text-blue-600 transition-colors"
+                >
+                  FAQ
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/how-it-works"
+                  className="hover:text-blue-600 transition-colors"
+                >
+                  How It Works
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          {/* Legal Links */}
+          <div className="space-y-2">
+            <h3 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">
+              Legal
+            </h3>
+            <ul className="space-y-1">
+              <li>
+                <Link
                   href="/privacy"
                   className="hover:text-blue-600 transition-colors"
                 >
@@ -62,18 +103,18 @@ export function Footer() {
               </li>
               <li>
                 <Link
-                  href="/contact"
-                  className="hover:text-blue-600 transition-colors"
-                >
-                  Contact Us
-                </Link>
-              </li>
-              <li>
-                <Link
                   href="/about"
                   className="hover:text-blue-600 transition-colors"
                 >
                   About Us
+                </Link>
+              </li>
+              <li>
+                <Link
+                  href="/contact"
+                  className="hover:text-blue-600 transition-colors"
+                >
+                  Contact Us
                 </Link>
               </li>
             </ul>
