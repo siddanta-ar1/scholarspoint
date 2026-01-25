@@ -17,6 +17,10 @@ export interface AuthState {
     } | null;
 }
 
+// Profile cache to persist across tab changes
+const profileCache = new Map<string, { data: AuthState["profile"]; timestamp: number }>();
+const PROFILE_CACHE_TTL = 5 * 60 * 1000; // 5 minutes
+
 export function useAuth() {
     const [authState, setAuthState] = useState<AuthState>({
         user: null,
@@ -27,9 +31,25 @@ export function useAuth() {
     });
 
     const mounted = useRef(false);
+    const currentUserIdRef = useRef<string | null>(null);
 
-    // robust profile fetch with timeout
-    const fetchProfile = useCallback(async (userId: string) => {
+    // Get cached profile if valid
+    const getCachedProfile = useCallback((userId: string) => {
+        const cached = profileCache.get(userId);
+        if (cached && Date.now() - cached.timestamp < PROFILE_CACHE_TTL) {
+            return cached.data;
+        }
+        return null;
+    }, []);
+
+    // Robust profile fetch with timeout and caching
+    const fetchProfile = useCallback(async (userId: string, forceRefresh = false) => {
+        // Check cache first (unless force refresh)
+        if (!forceRefresh) {
+            const cached = getCachedProfile(userId);
+            if (cached) return cached;
+        }
+
         try {
             const profilePromise = supabase
                 .from("profiles")
@@ -49,131 +69,64 @@ export function useAuth() {
                 timeoutPromise,
             ])) as any;
 
+            // Cache the result
+            if (profile) {
+                profileCache.set(userId, { data: profile, timestamp: Date.now() });
+            }
+
             return profile;
         } catch (error) {
             console.error("Error fetching profile:", error);
             return null;
         }
-    }, []);
+    }, [getCachedProfile]);
 
-    // Centralized state updater that respects previous state
-    const refreshAuthState = useCallback(
-        async (session: Session | null, eventType?: string) => {
-            if (!mounted.current) return;
-
-            if (!session?.user) {
-                setAuthState({
-                    user: null,
-                    session: null,
-                    isLoading: false,
-                    isAdmin: false,
-                    profile: null,
-                });
-                return;
-            }
-
-            // Optimization: If we already have this user loaded, DON'T show global loading spinner
-            // This prevents the flickering when tab focus triggers validation
-            const isSameUser = authState.user?.id === session.user.id;
-
-            // Only set loading if we don't have a user yet, or if it's an explicit sign-in event from no-auth
-            if (!isSameUser) {
-                setAuthState(prev => ({ ...prev, isLoading: true }));
-            }
-
-            // Fetch profile (in background if it's just a refresh)
-            const profile = await fetchProfile(session.user.id);
-
-            if (mounted.current) {
-                setAuthState({
-                    user: session.user,
-                    session,
-                    isLoading: false, // Always done loading here
-                    isAdmin: profile?.role === "admin",
-                    profile,
-                });
-            }
-        },
-        [fetchProfile, authState.user?.id] // Depend on current user ID for comparison
-    );
-
+    // Single consolidated useEffect for auth initialization and listener
     useEffect(() => {
         mounted.current = true;
 
-        // 1. Initial Load
-        const initializeAuth = async () => {
-            try {
-                const sessionPromise = supabase.auth.getSession();
-                const timeoutPromise = new Promise<{ data: { session: null }; error: any }>((_, reject) =>
-                    setTimeout(() => reject(new Error("Auth init timed out")), 4000)
-                );
-
-                const { data: { session } } = (await Promise.race([sessionPromise, timeoutPromise])) as any;
-
-                await refreshAuthState(session, 'INITIAL_LOAD');
-            } catch (error) {
-                console.error("Auth initialization failed:", error);
-                if (mounted.current) {
-                    setAuthState((prev) => ({ ...prev, isLoading: false }));
-                }
-            }
-        };
-
-        initializeAuth();
-
-        // 2. Subscription Listener
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-            if (mounted.current) {
-                // Skip updating if it's just a token refresh and we have the same user
-                // But we still want to update the session object in state
-                await refreshAuthState(session, event);
-            }
-        });
-
-        return () => {
-            mounted.current = false;
-            subscription.unsubscribe();
-        };
-    }, []); // Empty dependency array for init logic
-
-    // Separate effect for refreshAuthState when it changes due to closure?
-    // Actually onAuthStateChange is set up once. The closure inside it will have stale `refreshAuthState` if we are not careful.
-    // HOWEVER, supabase listener should probably call a ref-stable function or use a ref for state comparison.
-    // A cleaner way for the comparison:
-    // Instead of relying on `authState` closure inside the listener (which is stale),
-    // we can pass the logic to `setAuthState` functional update or just check session IDs.
-
-    // Actually, I should use a Ref to hold the current user ID so the listener can check it without recreating the listener.
-    const currentUserIdRef = useRef<string | null>(null);
-
-    // Sync ref
-    useEffect(() => {
-        currentUserIdRef.current = authState.user?.id || null;
-    }, [authState.user?.id]);
-
-    // Re-write initialize/listener to use the Ref for comparison
-    useEffect(() => {
-        mounted.current = true;
-
-        const performUpdate = async (session: Session | null) => {
+        const performUpdate = async (session: Session | null, isInitialLoad = false) => {
             if (!session?.user) {
                 if (mounted.current) {
                     setAuthState({
-                        user: null, session: null, isLoading: false, isAdmin: false, profile: null
+                        user: null,
+                        session: null,
+                        isLoading: false,
+                        isAdmin: false,
+                        profile: null
                     });
+                    currentUserIdRef.current = null;
                 }
                 return;
             }
 
-            const isSamgeUser = currentUserIdRef.current === session.user.id;
-            // Only set loading true if it's a DIFFERENT user
-            if (!isSamgeUser && mounted.current) {
+            const isSameUser = currentUserIdRef.current === session.user.id;
+
+            // Key optimization: Only show loading spinner on initial load or user change
+            // NOT on tab visibility changes for the same user
+            if (isInitialLoad && !isSameUser && mounted.current) {
                 setAuthState(prev => ({ ...prev, isLoading: true }));
             }
 
+            // For the same user on tab change, use cached profile immediately
+            if (isSameUser && !isInitialLoad) {
+                const cachedProfile = getCachedProfile(session.user.id);
+                if (cachedProfile && mounted.current) {
+                    // Update session silently without loading state
+                    setAuthState(prev => ({
+                        ...prev,
+                        session,
+                        user: session.user,
+                    }));
+                    return; // Skip profile fetch entirely for same user
+                }
+            }
+
+            // Fetch profile (will use cache if available)
             const profile = await fetchProfile(session.user.id);
 
             if (mounted.current) {
+                currentUserIdRef.current = session.user.id;
                 setAuthState({
                     user: session.user,
                     session,
@@ -184,31 +137,36 @@ export function useAuth() {
             }
         };
 
-        // Init
+        // Initialize auth
         const init = async () => {
             try {
                 const { data: { session } } = await supabase.auth.getSession();
-                await performUpdate(session);
+                await performUpdate(session, true);
             } catch (e) {
-                console.error(e);
-                if (mounted.current) setAuthState(prev => ({ ...prev, isLoading: false }));
+                console.error("Auth initialization failed:", e);
+                if (mounted.current) {
+                    setAuthState(prev => ({ ...prev, isLoading: false }));
+                }
             }
         };
         init();
 
-        // Listener
+        // Single auth state change listener
         const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-            performUpdate(session);
+            // Tab visibility changes fire TOKEN_REFRESHED events - handle gracefully
+            performUpdate(session, false);
         });
 
         return () => {
             mounted.current = false;
             subscription.unsubscribe();
         };
-    }, [fetchProfile]); // Only depend on stable fetchProfile
+    }, [fetchProfile, getCachedProfile]);
 
-    // Auth actions (unchanged)
+    // Auth actions
     const signOut = useCallback(async () => {
+        // Clear profile cache on sign out
+        profileCache.clear();
         await supabase.auth.signOut();
     }, []);
 
