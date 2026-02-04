@@ -5,6 +5,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 
+export const revalidate = 0;
+
 export default async function OnlineCoursesPage() {
   // Fetch from the UNIFIED table with the correct type
   const { data: courses } = await supabase

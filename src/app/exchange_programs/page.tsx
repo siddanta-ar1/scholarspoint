@@ -4,7 +4,7 @@ import { GraduationCap, ArrowLeft } from "lucide-react";
 import { Opportunity } from "@/types/database";
 import Link from "next/link";
 
-export const revalidate = 3600; // Cache for 1 hour
+export const revalidate = 0;
 
 export default async function ExchangeProgramsPage() {
   // Fetch from the UNIFIED table

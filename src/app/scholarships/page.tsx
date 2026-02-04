@@ -5,7 +5,7 @@ import { Opportunity } from "@/types/database";
 import { Metadata } from "next";
 import Link from "next/link";
 
-export const revalidate = 3600;
+export const revalidate = 0;
 
 export const metadata: Metadata = {
   title: "International Scholarships 2025 | Fully Funded | ScholarsPoint",

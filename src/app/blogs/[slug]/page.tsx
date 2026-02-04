@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
-export const revalidate = 3600; // Cache for 1 hour
+export const revalidate = 0;
 
 export async function generateMetadata({
   params,
