@@ -1,7 +1,8 @@
 import { supabase } from "@/lib/supabaseClient";
 import OpportunityList from "@/components/OpportunityList";
-import { GraduationCap } from "lucide-react";
+import { GraduationCap, ArrowLeft } from "lucide-react";
 import { Opportunity } from "@/types/database";
+import Link from "next/link";
 
 export const revalidate = 3600; // Cache for 1 hour
 
@@ -21,6 +22,13 @@ export default async function WorkshopsPage() {
       {/* Professional Header Section */}
       <div className="bg-sky-600 rounded-[40px] p-12 md:p-20 text-white relative overflow-hidden shadow-2xl">
         <div className="relative z-10 max-w-2xl space-y-6">
+          <Link
+            href="/"
+            className="inline-flex items-center text-white/80 hover:text-white transition-colors mb-4"
+          >
+            <ArrowLeft className="mr-2" size={20} />
+            Back to Home
+          </Link>
           <div className="inline-flex p-3 bg-white/20 backdrop-blur-md rounded-2xl">
             <GraduationCap size={32} className="text-white" />
           </div>

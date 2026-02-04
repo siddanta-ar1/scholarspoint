@@ -1,8 +1,9 @@
 import { supabase } from "@/lib/supabaseClient";
 import OpportunityList from "@/components/OpportunityList";
-import { GraduationCap } from "lucide-react";
+import { GraduationCap, ArrowLeft } from "lucide-react";
 import { Opportunity } from "@/types/database";
 import { Metadata } from "next";
+import Link from "next/link";
 
 export const revalidate = 3600;
 
@@ -39,6 +40,13 @@ export default async function ScholarshipsPage() {
       {/* Header Section - Mobile optimized */}
       <div className="bg-gradient-to-br from-sky-600 via-blue-600 to-indigo-700 text-white relative overflow-hidden">
         <div className="container mx-auto px-4 py-10 sm:py-16 md:py-20 relative z-10">
+          <Link
+            href="/"
+            className="inline-flex items-center text-white/80 hover:text-white transition-colors mb-6"
+          >
+            <ArrowLeft className="mr-2" size={20} />
+            Back to Home
+          </Link>
           <div className="max-w-2xl space-y-4 sm:space-y-6">
             {/* Icon */}
             <div className="inline-flex p-2.5 sm:p-3 bg-white/20 backdrop-blur-md rounded-xl sm:rounded-2xl">

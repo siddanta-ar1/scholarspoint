@@ -1,6 +1,6 @@
 import { supabase } from "@/lib/supabaseClient";
 import { Card, CardContent } from "@/components/ui/card";
-import { Globe, PlaneTakeoff, ShieldCheck } from "lucide-react";
+import { Globe, PlaneTakeoff, ShieldCheck, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -14,6 +14,13 @@ export default async function VisaGuidesPage() {
     <main className="container mx-auto px-4 py-16 space-y-12">
       <div className="bg-sky-600 rounded-[32px] p-10 md:p-16 text-white relative overflow-hidden">
         <div className="relative z-10 max-w-2xl space-y-6">
+          <Link
+            href="/"
+            className="inline-flex items-center text-white/80 hover:text-white transition-colors mb-2"
+          >
+            <ArrowLeft className="mr-2" size={20} />
+            Back to Home
+          </Link>
           <h1 className="text-4xl md:text-6xl font-black leading-tight">
             Student <span className="text-sky-300 underline">Visa Guides</span>
           </h1>

@@ -73,33 +73,35 @@ export default function OpportunityTabs() {
     setError(null);
 
     try {
-      // Fetch all at once with a single query for better performance
-      // Added a timeout to prevent infinite hanging
-      const fetchPromise = supabase
-        .from("opportunities")
-        .select("*")
-        .eq("is_active", true)
-        .order("created_at", { ascending: false })
-        .limit(60); // Increased limit slightly
+      // Create a promise for each tab to fetch its own top 4 items
+      const queries = TABS_CONFIG.map(async (tab) => {
+        const { data, error } = await supabase
+          .from("opportunities")
+          .select("*")
+          .eq("type", tab.value)
+          .eq("is_active", true)
+          .order("created_at", { ascending: false })
+          .limit(4);
+
+        if (error) throw error;
+        return { type: tab.value, data: data || [] };
+      });
 
       // Timeout after 10 seconds
-      const timeoutPromise = new Promise<{ data: null; error: any }>((_, reject) =>
+      const timeoutPromise = new Promise<never>((_, reject) =>
         setTimeout(() => reject(new Error("Request timed out")), 10000)
       );
 
-      const { data: allData, error: apiError } = await Promise.race([
-        fetchPromise,
+      // Execute all queries in parallel with a race against timeout
+      const results = await Promise.race([
+        Promise.all(queries),
         timeoutPromise,
-      ]) as any;
+      ]);
 
-      if (apiError) throw apiError;
-
-      // Group by type
+      // Group results
       const grouped: TabData = {};
-      TABS_CONFIG.forEach((tab) => {
-        grouped[tab.value] = (allData || [])
-          .filter((item: Opportunity) => item.type === tab.value)
-          .slice(0, 4) as Opportunity[];
+      results.forEach((result) => {
+        grouped[result.type] = result.data as Opportunity[];
       });
 
       setData(grouped);

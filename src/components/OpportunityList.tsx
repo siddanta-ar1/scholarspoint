@@ -25,7 +25,7 @@ export default function OpportunityList({
   showFilters = true,
 }: Props) {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
-  const [showExpired, setShowExpired] = useState(false);
+  const [showExpired, setShowExpired] = useState(true);
 
   // Sort and filter
   const sortedData = sortByDeadline(data, showExpired);

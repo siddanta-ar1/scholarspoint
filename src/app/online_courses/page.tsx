@@ -1,6 +1,6 @@
 import { supabase } from "@/lib/supabaseClient";
 import { Card, CardContent } from "@/components/ui/card";
-import { BookOpen, Zap, Award } from "lucide-react";
+import { BookOpen, Zap, Award, ArrowLeft } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
@@ -16,6 +16,15 @@ export default async function OnlineCoursesPage() {
 
   return (
     <main className="container mx-auto px-4 py-16 space-y-12">
+      <div>
+        <Link
+          href="/"
+          className="inline-flex items-center text-gray-600 hover:text-gray-900 transition-colors"
+        >
+          <ArrowLeft className="mr-2" size={20} />
+          Back to Home
+        </Link>
+      </div>
       <div className="flex flex-col items-center text-center space-y-4 max-w-3xl mx-auto">
         <div className="p-4 bg-blue-50 text-blue-600 rounded-3xl">
           <BookOpen size={40} />

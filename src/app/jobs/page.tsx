@@ -1,6 +1,7 @@
 import { supabase } from "@/lib/supabaseClient";
 import OpportunityList from "@/components/OpportunityList";
-import { Briefcase } from "lucide-react";
+import { Briefcase, ArrowLeft } from "lucide-react";
+import Link from "next/link";
 
 export default async function JobsPage() {
   const { data } = await supabase
@@ -12,6 +13,15 @@ export default async function JobsPage() {
 
   return (
     <main className="container mx-auto px-4 py-12 space-y-10">
+      <div>
+        <Link
+          href="/"
+          className="inline-flex items-center text-gray-600 hover:text-gray-900 transition-colors"
+        >
+          <ArrowLeft className="mr-2" size={20} />
+          Back to Home
+        </Link>
+      </div>
       <div className="flex flex-col items-center text-center space-y-4">
         <div className="p-3 bg-sky-100 text-sky-600 rounded-2xl">
           <Briefcase size={32} />
