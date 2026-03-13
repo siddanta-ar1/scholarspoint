@@ -219,6 +219,18 @@ export default function PrivacyPolicyPage() {
                   </a>
                   .
                 </p>
+                <p className="text-gray-700 leading-relaxed mb-4">
+                  For more information on how Google uses your data when you use our website, please visit{" "}
+                  <a
+                    href="https://policies.google.com/technologies/partner-sites"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sky-600 hover:underline"
+                  >
+                    How Google uses data when you use our partners&apos; sites or apps
+                  </a>
+                  .
+                </p>
 
                 <h3 className="text-xl font-semibold text-gray-900 mt-6 mb-3">
                   Types of Cookies We Use

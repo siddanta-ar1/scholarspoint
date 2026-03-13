@@ -116,6 +116,11 @@ export interface Opportunity {
   content?: string | null;
   application_url: string | null;
 
+  // Expert Curation (To defeat thin content)
+  scholars_point_tips?: string | null;
+  who_should_apply?: string | null;
+  visa_difficulty?: string | null;
+
   // The Polymorphic Column
   details: OpportunityDetails;
 

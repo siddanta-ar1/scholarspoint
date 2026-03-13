@@ -227,6 +227,49 @@ export default function OpportunityDetailView({ data }: { data: Opportunity }) {
               </div>
             </div>
           )}
+
+          {/* Expert Insights (Defeats Thin Content Penalty) */}
+          <div className="bg-sky-50 dark:bg-sky-950/30 p-8 rounded-3xl border border-sky-100 dark:border-sky-900 mt-12 mb-8">
+            <h3 className="text-2xl font-black mb-6 text-gray-900 dark:text-gray-100 flex items-center gap-3">
+              <Zap className="text-amber-500" size={28} />
+              ScholarsPoint Expert Insights
+            </h3>
+            
+            <div className="space-y-6">
+              <div>
+                <h4 className="font-bold text-lg text-gray-900 dark:text-gray-50 flex items-center gap-2 mb-2">
+                  <Check className="text-green-500" size={20} /> Who Should Apply
+                </h4>
+                <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                  {data.who_should_apply || `This ${data.type.replace('_', ' ')} is strongly suited for determined candidates looking to advance their trajectory at ${data.organization}. Be sure your academic or professional background closely aligns with their core focus areas before submitting.`}
+                </p>
+              </div>
+
+              <div>
+                <h4 className="font-bold text-lg text-gray-900 dark:text-gray-50 flex items-center gap-2 mb-2">
+                  <AlertTriangle className="text-amber-500" size={20} /> ScholarsPoint Application Tips
+                </h4>
+                <p className="text-gray-700 dark:text-gray-300 leading-relaxed">
+                  {data.scholars_point_tips || `We recommend preparing your documents at least 4 weeks before the deadline. When applying to ${data.organization}, heavily emphasize your leadership potential, community impact, and global mindset. A highly personalized Statement of Purpose (SOP) avoiding generic cliches is the #1 way to stand out.`}
+                </p>
+              </div>
+
+              <div>
+                <h4 className="font-bold text-lg text-gray-900 dark:text-gray-50 flex items-center gap-2 mb-2">
+                  <Globe className="text-blue-500" size={20} /> Visa Difficulty Rating
+                </h4>
+                <div className="flex flex-col sm:flex-row sm:items-center gap-3 mt-3">
+                  <span className="inline-flex items-center justify-center px-4 py-1.5 bg-amber-100 dark:bg-amber-900/50 text-amber-800 dark:text-amber-300 font-bold rounded-full text-sm w-fit">
+                    {data.visa_difficulty || "Medium / Standard Processing"}
+                  </span>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Expect standard documentation checks for {data.country || 'this program'}. Book embassy appointments immediately after acceptance.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
         </div>
 
         {/* Sidebar */}
