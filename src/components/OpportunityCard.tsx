@@ -64,7 +64,7 @@ export const OpportunityCard = ({ data, compact = false }: OpportunityCardProps)
         {/* Small thumbnail */}
         <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
           <Image
-            src={data.image_url || "/placeholder.jpg"}
+            src={data.image_url || "/placeholder.png"}
             alt={data.title}
             fill
             className={cn(
@@ -125,7 +125,7 @@ export const OpportunityCard = ({ data, compact = false }: OpportunityCardProps)
         {/* Image Section - Responsive height */}
         <div className="relative w-full aspect-[4/3] sm:aspect-video overflow-hidden bg-gray-100">
           <Image
-            src={data.image_url || "/placeholder.jpg"}
+            src={data.image_url || "/placeholder.png"}
             alt={data.title}
             fill
             className={cn(

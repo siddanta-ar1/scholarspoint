@@ -117,6 +117,14 @@ export function Footer() {
                   Contact Us
                 </Link>
               </li>
+              <li>
+                <Link
+                  href="/disclaimer"
+                  className="hover:text-blue-600 transition-colors"
+                >
+                  Disclaimer
+                </Link>
+              </li>
             </ul>
           </div>
 

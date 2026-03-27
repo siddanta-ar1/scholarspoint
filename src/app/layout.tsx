@@ -77,7 +77,13 @@ export default function RootLayout({
           }}
         />
               
-              
+
+        {/* Google AdSense - loaded unconditionally for verification */}
+        <Script
+          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6531423360862071"
+          crossOrigin="anonymous"
+          strategy="afterInteractive"
+        />
       </head>
       <body className={`${inter.className} antialiased`}>
         {/* This wrapper handles hiding Navbar/Footer on Admin pages */}

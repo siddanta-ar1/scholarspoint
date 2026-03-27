@@ -109,14 +109,7 @@ const faqCategories = [
 ];
 
 export default function FAQPage() {
-    const [openItems, setOpenItems] = useState<string[]>([]);
     const [searchQuery, setSearchQuery] = useState("");
-
-    const toggleItem = (id: string) => {
-        setOpenItems(prev =>
-            prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
-        );
-    };
 
     const filteredCategories = faqCategories.map(category => ({
         ...category,
@@ -186,34 +179,28 @@ export default function FAQPage() {
                                 </div>
                                 <div className="space-y-3">
                                     {category.questions.map((item, qIndex) => {
-                                        const itemId = `${catIndex}-${qIndex}`;
-                                        const isOpen = openItems.includes(itemId);
                                         return (
-                                            <div
+                                            <details
                                                 key={qIndex}
-                                                className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:border-gray-200 transition-colors"
+                                                className="group bg-white rounded-2xl border border-gray-100 overflow-hidden hover:border-gray-200 transition-colors [&_summary::-webkit-details-marker]:hidden"
                                             >
-                                                <button
-                                                    onClick={() => toggleItem(itemId)}
-                                                    className="w-full flex items-start justify-between gap-4 p-5 text-left"
+                                                <summary
+                                                    className="w-full flex items-start justify-between gap-4 p-5 text-left cursor-pointer outline-none"
                                                 >
                                                     <span className="font-semibold text-gray-900">
                                                         {item.q}
                                                     </span>
                                                     <ChevronDown
                                                         size={20}
-                                                        className={`shrink-0 text-gray-400 transition-transform duration-200 ${isOpen ? "rotate-180" : ""
-                                                            }`}
+                                                        className="shrink-0 text-gray-400 transition-transform duration-200 group-open:rotate-180"
                                                     />
-                                                </button>
-                                                {isOpen && (
-                                                    <div className="px-5 pb-5">
-                                                        <p className="text-gray-600 leading-relaxed">
-                                                            {item.a}
-                                                        </p>
-                                                    </div>
-                                                )}
-                                            </div>
+                                                </summary>
+                                                <div className="px-5 pb-5">
+                                                    <p className="text-gray-600 leading-relaxed">
+                                                        {item.a}
+                                                    </p>
+                                                </div>
+                                            </details>
                                         );
                                     })}
                                 </div>

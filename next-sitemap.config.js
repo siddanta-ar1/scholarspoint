@@ -4,7 +4,7 @@ module.exports = {
   generateRobotsTxt: true,
 
   // Exclude admin and auth pages
-  exclude: ['/admin/*', '/auth/*', '/login', '/signup', '/forgot-password', '/reset-password'],
+  exclude: ['/admin', '/admin/*', '/auth/*', '/login', '/signup', '/forgot-password', '/reset-password'],
 
   // Generate index sitemap for better performance with large sites
   generateIndexSitemap: true,
@@ -15,9 +15,6 @@ module.exports = {
 
   // Custom robot rules
   robotsTxtOptions: {
-    additionalSitemaps: [
-      'https://scholarspoint.net/sitemap-opportunities.xml',
-    ],
     policies: [
       {
         userAgent: '*',
@@ -68,7 +65,7 @@ module.exports = {
     }
 
     // Medium priority for static pages
-    const staticPages = ['/about', '/contact', '/privacy', '/terms', '/faq', '/how-it-works'];
+    const staticPages = ['/about', '/contact', '/privacy', '/terms', '/faq', '/how-it-works', '/disclaimer'];
     if (staticPages.includes(path)) {
       return {
         loc: path,

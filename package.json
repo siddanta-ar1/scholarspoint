@@ -7,7 +7,13 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "postbuild": "next-sitemap"
+    "postbuild": "next-sitemap",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:debug": "playwright test --debug",
+    "test:e2e:login": "playwright test auth.login",
+    "test:e2e:admin": "playwright test admin.dashboard",
+    "test:e2e:report": "playwright show-report"
   },
   "dependencies": {
     "@headlessui/react": "^2.2.8",
@@ -37,6 +43,7 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@playwright/test": "^1.58.2",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/nodemailer": "^6.4.17",

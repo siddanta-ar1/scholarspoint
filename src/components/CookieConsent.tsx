@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import Script from 'next/script';
 
 export default function CookieConsent() {
   const [consentGiven, setConsentGiven] = useState<boolean | null>(null);
@@ -36,16 +35,6 @@ export default function CookieConsent() {
 
   return (
     <>
-      {consentGiven && (
-        <Script
-          id="adsense-init"
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6531423360862071"
-          crossOrigin="anonymous"
-          strategy="afterInteractive"
-        />
-      )}
-
       {consentGiven === null && (
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-2xl z-50 p-4 md:p-6 pb-8 md:pb-6">
           <div className="container mx-auto max-w-6xl flex flex-col md:flex-row items-center justify-between gap-4">

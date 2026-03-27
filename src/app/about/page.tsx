@@ -15,7 +15,7 @@ export const metadata: Metadata = {
     siteName: "ScholarsPoint",
     images: [
       {
-        url: "/og-about.jpg", // Replace with your actual OG image path
+        url: "/placeholder.png", // Replaced missing og-about.jpg
         width: 1200,
         height: 630,
       },
@@ -200,12 +200,12 @@ export default function AboutPage() {
             >
               Contact Us
             </a>
-            <a
-              href="/opportunities"
+            <Link
+              href="/scholarships"
               className="px-8 py-3 bg-white text-blue-700 border border-blue-700 font-bold rounded-full hover:bg-blue-50 transition-colors"
             >
-              Browse Opportunities
-            </a>
+              Browse Scholarships
+            </Link>
           </div>
         </footer>
       </main>
