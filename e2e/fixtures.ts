@@ -1,4 +1,8 @@
-import { test as base, expect } from '@playwright/test';
+import { test as base, expect, Page } from '@playwright/test';
+
+type MyFixtures = {
+  authenticatedPage: Page;
+};
 
 /**
  * Test user credentials for E2E tests
@@ -20,7 +24,7 @@ export const TEST_ACCOUNTS = {
 /**
  * Extended test fixture with authentication helpers
  */
-export const test = base.extend({
+export const test = base.extend<MyFixtures>({
   authenticatedPage: async ({ page }, use) => {
     // This is a placeholder for future auth setup if needed
     await use(page);
