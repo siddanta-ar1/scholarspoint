@@ -7,6 +7,8 @@ import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import {
   Calendar,
   MapPin,
@@ -207,24 +209,24 @@ export default function OpportunityDetailView({ data }: { data: Opportunity }) {
           </div>
 
           {/* Description */}
-          <div className="prose dark:prose-invert max-w-none">
-            <h3 className="text-2xl font-black mb-6 text-gray-900 dark:text-gray-100">
+          <div className="prose dark:prose-invert max-w-none prose-sky prose-img:rounded-3xl">
+            <h3 className="text-2xl font-black mb-6 text-gray-900 dark:text-gray-100 not-prose">
               Overview
             </h3>
-            <p className="whitespace-pre-wrap leading-relaxed text-gray-600 dark:text-gray-300 text-lg">
-              {data.description}
-            </p>
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              {data.description || ""}
+            </ReactMarkdown>
           </div>
 
           {/* Full Content */}
           {data.content && (
-            <div className="prose dark:prose-invert max-w-none">
-              <h3 className="text-2xl font-black mb-6 text-gray-900 dark:text-gray-100">
+            <div className="prose dark:prose-invert max-w-none prose-sky prose-img:rounded-3xl mt-12">
+              <h3 className="text-2xl font-black mb-6 text-gray-900 dark:text-gray-100 not-prose">
                 Details
               </h3>
-              <div className="whitespace-pre-wrap leading-relaxed text-gray-600 dark:text-gray-300">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
                 {data.content}
-              </div>
+              </ReactMarkdown>
             </div>
           )}
 
