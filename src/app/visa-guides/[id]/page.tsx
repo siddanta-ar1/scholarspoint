@@ -7,6 +7,8 @@ import { supabase } from '@/lib/supabaseClient'
 import { toast } from 'sonner'
 import { ArrowLeft, Loader2 } from 'lucide-react'
 import Link from 'next/link'
+import ReactMarkdown from 'react-markdown'
+import remarkGfm from 'remark-gfm'
 
 /* ----------------------------- Types ----------------------------- */
 
@@ -232,7 +234,11 @@ export default function VisaGuideDetail(): React.ReactElement | null {
                 </div>
                 <div className="flex-1">
                   <h4 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{s.title ?? `Step ${i + 1}`}</h4>
-                  {s.description && <p className="mt-2 text-gray-700 dark:text-gray-300">{s.description}</p>}
+                  {s.description && (
+                    <div className="mt-2 prose prose-sm dark:prose-invert max-w-none prose-sky">
+                      <ReactMarkdown remarkPlugins={[remarkGfm]}>{s.description}</ReactMarkdown>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -319,9 +325,11 @@ export default function VisaGuideDetail(): React.ReactElement | null {
             ) : null}
           </p>
 
-          {guide.description ? (
-            <p className="mt-4 text-gray-800 dark:text-gray-300">{guide.description}</p>
-          ) : null}
+          {guide.description && (
+            <div className="mt-4 prose prose-sm dark:prose-invert max-w-none prose-sky">
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>{guide.description}</ReactMarkdown>
+            </div>
+          )}
 
           <div className="mt-4 flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
             {guide.author && <span>By <strong className="text-gray-800 dark:text-gray-200">{guide.author}</strong></span>}
@@ -339,9 +347,9 @@ export default function VisaGuideDetail(): React.ReactElement | null {
           <div className="mt-4 space-y-6 text-gray-800 dark:text-gray-300">
             {guide.content?.sections && guide.content.sections.length > 0 ? (
               guide.content.sections.map((s, i) => (
-                <section key={i} className="prose prose-sm dark:prose-invert max-w-none">
-                  <h3 className="text-lg font-semibold">{s.heading}</h3>
-                  <p className="whitespace-pre-line">{s.content}</p>
+                <section key={i} className="prose prose-sm dark:prose-invert max-w-none prose-sky">
+                  <h3 className="text-lg font-semibold not-prose">{s.heading}</h3>
+                  <ReactMarkdown remarkPlugins={[remarkGfm]}>{s.content}</ReactMarkdown>
                 </section>
               ))
             ) : (

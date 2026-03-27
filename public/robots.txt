@@ -14,4 +14,3 @@ Host: https://scholarspoint.net
 
 # Sitemaps
 Sitemap: https://scholarspoint.net/sitemap.xml
-Sitemap: https://scholarspoint.net/sitemap-opportunities.xml
