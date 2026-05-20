@@ -6,7 +6,6 @@ import { Analytics } from "@vercel/analytics/next";
 import { Toaster } from "sonner";
 
 import { Footer } from "@/components/footer";
-import Script from "next/script";
 import Navbar from "@/components/navbar";
 import ClientLayoutWrapper from "@/components/ClientLayoutWrapper";
 import CookieConsent from "@/components/CookieConsent";
@@ -78,11 +77,12 @@ export default function RootLayout({
         />
               
 
-        {/* Google AdSense - loaded unconditionally for verification */}
-        <Script
+        {/* Google AdSense - inline script so crawlers see it in raw HTML */}
+        {/* eslint-disable-next-line @next/next/no-sync-scripts */}
+        <script
+          async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6531423360862071"
           crossOrigin="anonymous"
-          strategy="afterInteractive"
         />
       </head>
       <body className={`${inter.className} antialiased`}>
