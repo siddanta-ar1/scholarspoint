@@ -1,36 +1,35 @@
 "use client";
 
-import { useEffect, useState, use } from "react";
+import { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import { supabase } from "@/lib/supabaseClient";
 import OpportunityForm from "@/components/admin/OpportunityForm";
 import { Loader2 } from "lucide-react";
 import { Opportunity } from "@/types/database";
 
-// Next.js 15: params is a Promise
-export default function EditPage({
-  params,
-}: {
-  params: Promise<{ id: string }>;
-}) {
-  const paramsRef = use(params); // Unlock the params
+export default function EditPage() {
+  const { id } = useParams<{ id: string }>();
   const [data, setData] = useState<Opportunity | null>(null);
   const [loading, setLoading] = useState(true);
+  const [notFound, setNotFound] = useState(false);
 
   useEffect(() => {
-    const fetch = async () => {
+    const fetchData = async () => {
       const { data, error } = await supabase
         .from("opportunities")
         .select("*")
-        .eq("id", paramsRef.id)
+        .eq("id", id)
         .single();
 
       if (!error && data) {
         setData(data as Opportunity);
+      } else {
+        setNotFound(true);
       }
       setLoading(false);
     };
-    fetch();
-  }, [paramsRef.id]);
+    fetchData();
+  }, [id]);
 
   if (loading)
     return (
@@ -38,7 +37,14 @@ export default function EditPage({
         <Loader2 className="animate-spin" />
       </div>
     );
-  if (!data) return <div>Opportunity not found</div>;
+
+  if (notFound || !data)
+    return (
+      <div className="text-center py-20">
+        <h2 className="text-xl font-bold text-gray-900">Opportunity Not Found</h2>
+        <p className="text-gray-500 mt-2">The requested opportunity does not exist.</p>
+      </div>
+    );
 
   return <OpportunityForm initialData={data} />;
 }

@@ -38,6 +38,8 @@ import {
 import Link from "next/link";
 import ImageUpload from "./ImageUpload";
 
+const toDateInput = (val?: string | null) => (val ? val.split("T")[0] : "");
+
 const generateSlug = (title: string) => {
   return (
     title
@@ -77,9 +79,9 @@ export default function OpportunityForm({
     organization: initialData?.organization || "",
     country: initialData?.country || "",
     location: initialData?.location || "",
-    deadline: initialData?.deadline || "",
-    start_date: initialData?.start_date || "",
-    end_date: initialData?.end_date || "",
+    deadline: toDateInput(initialData?.deadline),
+    start_date: toDateInput(initialData?.start_date),
+    end_date: toDateInput(initialData?.end_date),
     application_url: initialData?.application_url || "",
     image_url: initialData?.image_url || "",
     description: initialData?.description || "",
@@ -104,9 +106,9 @@ export default function OpportunityForm({
         organization: initialData.organization,
         country: initialData.country || "",
         location: initialData.location || "",
-        deadline: initialData.deadline || "",
-        start_date: initialData.start_date || "",
-        end_date: initialData.end_date || "",
+        deadline: toDateInput(initialData.deadline),
+        start_date: toDateInput(initialData.start_date),
+        end_date: toDateInput(initialData.end_date),
         application_url: initialData.application_url || "",
         image_url: initialData.image_url || "",
         description: initialData.description || "",
@@ -330,7 +332,7 @@ export default function OpportunityForm({
                 <Trophy size={14} /> Prizes
               </Label>
               <Input
-                value={details.prizes?.join(", ") || ""}
+                value={Array.isArray(details.prizes) ? details.prizes.join(", ") : (details.prizes || "")}
                 onChange={(e) =>
                   handleDetailChange(
                     "prizes",
@@ -560,7 +562,7 @@ export default function OpportunityForm({
             <div className="grid gap-2">
               <Label>Subjects (Comma separated)</Label>
               <Input
-                value={details.subjects?.join(", ") || ""}
+                value={Array.isArray(details.subjects) ? details.subjects.join(", ") : (details.subjects || "")}
                 onChange={(e) =>
                   handleDetailChange(
                     "subjects",
