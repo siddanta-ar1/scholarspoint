@@ -16,9 +16,9 @@ export function Footer() {
   return (
     <footer className="bg-gray-50 border-t mt-3 text-gray-700">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
           {/* ScholarsPoint Brand with Logo */}
-          <div className="space-y-4">
+          <div className="col-span-2 lg:col-span-1 space-y-4">
             <Link href="/" className="flex items-center gap-3">
               <div className="relative w-12 h-12 overflow-hidden rounded-lg">
                 <Image
@@ -174,7 +174,7 @@ export function Footer() {
         </div>
 
         {/* Bottom copyright */}
-        <div className="mt-10 border-t pt-4 text-sm text-gray-500 flex flex-col md:flex-row justify-between items-center">
+        <div className="mt-10 border-t pt-4 text-sm text-gray-500 flex flex-col sm:flex-row justify-between items-center gap-2">
           <p>
             &copy; {year}{" "}
             <span className="font-semibold text-blue-600">ScholarsPoint</span>.

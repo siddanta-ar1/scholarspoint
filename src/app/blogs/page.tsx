@@ -12,12 +12,12 @@ export default async function BlogListPage() {
     .order("published_at", { ascending: false });
 
   return (
-    <main className="container mx-auto px-4 py-16 space-y-12 min-h-screen">
+    <main className="container mx-auto px-4 py-8 sm:py-16 space-y-8 sm:space-y-12 min-h-screen">
       <div className="text-center space-y-4 max-w-2xl mx-auto">
         <div className="inline-flex p-4 bg-sky-50 text-sky-600 rounded-[24px] mb-2 shadow-sm">
           <BookOpen size={32} />
         </div>
-        <h1 className="text-4xl md:text-7xl font-black tracking-tighter text-gray-900">
+        <h1 className="text-3xl sm:text-5xl md:text-7xl font-black tracking-tighter text-gray-900">
           The <span className="text-sky-600">ScholarsPoint</span> Blog
         </h1>
         <p className="text-lg md:text-xl text-muted-foreground font-medium">
@@ -26,7 +26,7 @@ export default async function BlogListPage() {
         </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8 lg:gap-10">
         {posts?.map((post) => (
           // Fixed: post property is now correctly recognized by PostCard
           <PostCard key={post.id} post={post} />

@@ -69,11 +69,11 @@ export default function OpportunityDetailView({ data }: { data: Opportunity }) {
   };
 
   return (
-    <article className="max-w-5xl mx-auto pb-20 animate-in fade-in duration-500 px-4">
+    <article className="max-w-5xl mx-auto pb-24 lg:pb-20 animate-in fade-in duration-500 px-4">
       {/* Expired Banner */}
       {expired && (
-        <div className="mb-6 p-6 bg-red-50 border border-red-200 rounded-2xl">
-          <div className="flex items-start gap-4">
+        <div className="mb-4 sm:mb-6 p-4 sm:p-6 bg-red-50 border border-red-200 rounded-xl sm:rounded-2xl">
+          <div className="flex items-start gap-3 sm:gap-4">
             <div className="p-3 bg-red-100 rounded-xl">
               <AlertTriangle className="w-6 h-6 text-red-600" />
             </div>
@@ -97,7 +97,7 @@ export default function OpportunityDetailView({ data }: { data: Opportunity }) {
       )}
 
       {/* Hero Poster Section */}
-      <div className="relative w-full h-[300px] md:h-[400px] rounded-[40px] overflow-hidden mb-12 group shadow-2xl">
+      <div className="relative w-full h-[220px] sm:h-[280px] md:h-[400px] rounded-2xl sm:rounded-[32px] md:rounded-[40px] overflow-hidden mb-6 sm:mb-10 md:mb-12 group shadow-2xl">
         <Image
           src={data.image_url || "/placeholder.png"}
           alt={data.title}
@@ -107,7 +107,7 @@ export default function OpportunityDetailView({ data }: { data: Opportunity }) {
           priority
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />
-        <div className="absolute bottom-0 left-0 p-8 md:p-12 text-white w-full">
+        <div className="absolute bottom-0 left-0 p-4 sm:p-6 md:p-10 text-white w-full">
           <div className="flex flex-wrap gap-2 mb-4">
             <Badge className="bg-sky-500 hover:bg-sky-600 text-white border-none capitalize text-sm px-4 py-1.5 rounded-full shadow-lg">
               {data.type.replace("_", " ")}
@@ -123,10 +123,10 @@ export default function OpportunityDetailView({ data }: { data: Opportunity }) {
               </Badge>
             )}
           </div>
-          <h1 className="text-3xl md:text-5xl font-black leading-tight mb-4 text-shadow-lg">
+          <h1 className="text-xl sm:text-3xl md:text-5xl font-black leading-tight mb-2 sm:mb-4">
             {data.title}
           </h1>
-          <div className="flex flex-wrap gap-6 text-sm font-medium text-gray-200">
+          <div className="hidden sm:flex flex-wrap gap-4 md:gap-6 text-xs sm:text-sm font-medium text-gray-200">
             <div className="flex items-center gap-2">
               <Building size={18} className="text-sky-400" /> {data.organization}
             </div>
@@ -146,10 +146,10 @@ export default function OpportunityDetailView({ data }: { data: Opportunity }) {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
         <div className="lg:col-span-2 space-y-10">
           {/* Quick Stats Grid */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-2 gap-3 sm:gap-4">
             {data.type === "online_course" ? (
               <>
-                <div className="bg-blue-50 p-5 rounded-2xl border border-blue-100 flex items-center gap-4">
+                <div className="bg-blue-50 p-3 sm:p-5 rounded-xl sm:rounded-2xl border border-blue-100 flex items-center gap-3 sm:gap-4">
                   <div className="p-3 bg-blue-100 rounded-xl text-blue-600">
                     <Zap size={24} />
                   </div>
@@ -162,7 +162,7 @@ export default function OpportunityDetailView({ data }: { data: Opportunity }) {
                     </p>
                   </div>
                 </div>
-                <div className="bg-amber-50 p-5 rounded-2xl border border-amber-100 flex items-center gap-4">
+                <div className="bg-amber-50 p-3 sm:p-5 rounded-xl sm:rounded-2xl border border-amber-100 flex items-center gap-3 sm:gap-4">
                   <div className="p-3 bg-amber-100 rounded-xl text-amber-600">
                     <Award size={24} />
                   </div>
@@ -282,8 +282,8 @@ export default function OpportunityDetailView({ data }: { data: Opportunity }) {
 
         </div>
 
-        {/* Sidebar */}
-        <aside className="space-y-6">
+        {/* Sidebar — hidden on mobile, shown lg+ */}
+        <aside className="hidden lg:block space-y-6">
           <Card className="sticky top-24 shadow-2xl border-none overflow-hidden bg-white dark:bg-gray-900 rounded-[32px]">
             <div className={`h-3 w-full ${expired ? "bg-gray-400" : "bg-gradient-to-r from-sky-400 to-blue-600"}`} />
             <CardContent className="p-8 space-y-8">
@@ -336,6 +336,32 @@ export default function OpportunityDetailView({ data }: { data: Opportunity }) {
             </CardContent>
           </Card>
         </aside>
+      </div>
+      {/* Mobile sticky apply bar */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-md border-t border-gray-100 px-4 py-3 shadow-2xl">
+        <div className="flex items-center gap-3 max-w-lg mx-auto">
+          {deadlineStatus && !expired && (
+            <span className={`text-xs font-bold px-3 py-1.5 rounded-full flex-shrink-0 ${deadlineStatus.bgColor} ${deadlineStatus.color}`}>
+              {deadlineStatus.label}
+            </span>
+          )}
+          {expired ? (
+            <Link href={getSimilarPath()} className="flex-1">
+              <Button className="w-full h-11 font-bold bg-gray-600 hover:bg-gray-700 rounded-xl">
+                Explore Similar Opportunities
+              </Button>
+            </Link>
+          ) : (
+            <Button className="flex-1 h-11 font-bold bg-sky-600 hover:bg-sky-700 rounded-xl gap-2" asChild>
+              <Link href={data.application_url || "#"} target="_blank">
+                Apply Now <ExternalLink size={16} />
+              </Link>
+            </Button>
+          )}
+          <Button variant="outline" size="icon" className="h-11 w-11 rounded-xl flex-shrink-0" onClick={handleShare}>
+            {copied ? <Check size={16} /> : <Share2 size={16} />}
+          </Button>
+        </div>
       </div>
     </article>
   );

@@ -85,11 +85,11 @@ export default function BannerSlider() {
         >
           {/* Content */}
           <div
-            className="flex-1 p-10 md:p-16 lg:p-20 flex flex-col justify-center z-10 space-y-6"
+            className="flex-1 p-6 sm:p-10 md:p-14 lg:p-20 flex flex-col justify-center z-10 space-y-4 sm:space-y-6"
             style={{ backgroundColor: banner.background_color }}
           >
             <h2
-              className="text-3xl md:text-5xl lg:text-6xl font-black leading-tight"
+              className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-black leading-tight"
               style={{ color: banner.text_color }}
             >
               {banner.title}
@@ -141,14 +141,14 @@ export default function BannerSlider() {
         <>
           <button
             onClick={goToPrevious}
-            className="absolute left-4 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 transition-all opacity-0 group-hover:opacity-100"
+            className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 z-20 p-2 sm:p-3 rounded-full bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 transition-all opacity-70 sm:opacity-0 sm:group-hover:opacity-100"
             aria-label="Previous slide"
           >
-            <ChevronLeft size={24} />
+            <ChevronLeft size={20} />
           </button>
           <button
             onClick={goToNext}
-            className="absolute right-4 top-1/2 -translate-y-1/2 z-20 p-3 rounded-full bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 transition-all opacity-0 group-hover:opacity-100"
+            className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 z-20 p-2 sm:p-3 rounded-full bg-white/20 backdrop-blur-sm text-white hover:bg-white/30 transition-all opacity-70 sm:opacity-0 sm:group-hover:opacity-100"
             aria-label="Next slide"
           >
             <ChevronRight size={24} />

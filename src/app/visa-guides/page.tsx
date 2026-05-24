@@ -14,7 +14,7 @@ export default async function VisaGuidesPage() {
 
   return (
     <main className="container mx-auto px-4 py-16 space-y-12">
-      <div className="bg-sky-600 rounded-[32px] p-10 md:p-16 text-white relative overflow-hidden">
+      <div className="bg-sky-600 rounded-2xl sm:rounded-[32px] p-6 sm:p-10 md:p-16 text-white relative overflow-hidden">
         <div className="relative z-10 max-w-2xl space-y-6">
           <Link
             href="/"
@@ -23,7 +23,7 @@ export default async function VisaGuidesPage() {
             <ArrowLeft className="mr-2" size={20} />
             Back to Home
           </Link>
-          <h1 className="text-4xl md:text-6xl font-black leading-tight">
+          <h1 className="text-3xl sm:text-4xl md:text-6xl font-black leading-tight">
             Student <span className="text-sky-300 underline">Visa Guides</span>
           </h1>
           <p className="text-lg opacity-90">
@@ -34,7 +34,7 @@ export default async function VisaGuidesPage() {
         <PlaneTakeoff className="absolute -bottom-10 -right-10 w-64 h-64 text-white/10 rotate-[-15deg]" />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
         {guides?.map((guide) => (
           <Link href={`/visa-guides/${guide.id}`} key={guide.id}>
             <Card className="group overflow-hidden border-none shadow-xl hover:shadow-2xl transition-all rounded-3xl">
