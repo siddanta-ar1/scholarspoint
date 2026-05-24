@@ -18,13 +18,13 @@ export default async function FellowshipsPage() {
   const fellowships = (data as Opportunity[]) || [];
 
   return (
-    <main className="container mx-auto px-4 py-16 space-y-12 animate-in fade-in duration-700">
+    <main className="container mx-auto px-4 py-8 sm:py-16 space-y-8 sm:space-y-12 animate-in fade-in duration-700">
       {/* Professional Header Section */}
-      <div className="bg-sky-600 rounded-[40px] p-12 md:p-20 text-white relative overflow-hidden shadow-2xl">
-        <div className="relative z-10 max-w-2xl space-y-6">
+      <div className="bg-sky-600 rounded-2xl sm:rounded-[32px] md:rounded-[40px] p-6 sm:p-10 md:p-20 text-white relative overflow-hidden shadow-2xl">
+        <div className="relative z-10 max-w-2xl space-y-4 sm:space-y-6">
           <Link
             href="/"
-            className="inline-flex items-center text-white/80 hover:text-white transition-colors mb-4"
+            className="inline-flex items-center text-white/80 hover:text-white transition-colors mb-2"
           >
             <ArrowLeft className="mr-2" size={20} />
             Back to Home
@@ -32,10 +32,10 @@ export default async function FellowshipsPage() {
           <div className="inline-flex p-3 bg-white/20 backdrop-blur-md rounded-2xl">
             <GraduationCap size={32} className="text-white" />
           </div>
-          <h1 className="text-5xl md:text-7xl font-black leading-tight tracking-tighter">
+          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-black leading-tight tracking-tighter">
             Global <span className="text-sky-200 underline">Fellowships</span>
           </h1>
-          <p className="text-xl md:text-2xl font-medium opacity-90 leading-relaxed">
+          <p className="text-base sm:text-lg md:text-xl font-medium opacity-90 leading-relaxed">
             Fully-funded opportunities to explore Global Fellowships.
           </p>
         </div>

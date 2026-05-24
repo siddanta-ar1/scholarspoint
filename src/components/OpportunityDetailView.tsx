@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { Opportunity } from "@/types/database";
 import Image from "next/image";
 import Link from "next/link";
@@ -24,8 +24,30 @@ import {
   AlertTriangle,
   ArrowRight,
   ExternalLink,
+  Briefcase,
+  Users,
+  BookOpen,
+  Tag,
+  Trophy,
+  Monitor,
+  Languages,
 } from "lucide-react";
 import { isExpired, formatDeadline, getDeadlineStatus } from "@/lib/opportunityHelpers";
+
+function StatCard({ bg, iconBg, iconColor, icon, label, value, capitalize }: {
+  bg: string; iconBg: string; iconColor: string; icon: React.ReactNode;
+  label: string; value: string; capitalize?: boolean;
+}) {
+  return (
+    <div className={`${bg} p-3 sm:p-5 rounded-xl sm:rounded-2xl border border-transparent flex items-center gap-3 sm:gap-4`}>
+      <div className={`p-2 sm:p-3 ${iconBg} rounded-xl ${iconColor} flex-shrink-0`}>{icon}</div>
+      <div className="min-w-0">
+        <p className="text-xs text-muted-foreground font-bold truncate">{label}</p>
+        <p className={`font-bold truncate ${capitalize ? "capitalize" : ""}`}>{value}</p>
+      </div>
+    </div>
+  );
+}
 
 export default function OpportunityDetailView({ data }: { data: Opportunity }) {
   const details: any = data.details || {};
@@ -147,63 +169,68 @@ export default function OpportunityDetailView({ data }: { data: Opportunity }) {
         <div className="lg:col-span-2 space-y-10">
           {/* Quick Stats Grid */}
           <div className="grid grid-cols-2 gap-3 sm:gap-4">
-            {data.type === "online_course" ? (
+            {data.type === "online_course" && (
               <>
-                <div className="bg-blue-50 p-3 sm:p-5 rounded-xl sm:rounded-2xl border border-blue-100 flex items-center gap-3 sm:gap-4">
-                  <div className="p-3 bg-blue-100 rounded-xl text-blue-600">
-                    <Zap size={24} />
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground font-bold">
-                      PACING
-                    </p>
-                    <p className="font-bold capitalize">
-                      {details.pacing?.replace("_", " ") || "Self-paced"}
-                    </p>
-                  </div>
-                </div>
-                <div className="bg-amber-50 p-3 sm:p-5 rounded-xl sm:rounded-2xl border border-amber-100 flex items-center gap-3 sm:gap-4">
-                  <div className="p-3 bg-amber-100 rounded-xl text-amber-600">
-                    <Award size={24} />
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground font-bold">
-                      CERTIFICATE
-                    </p>
-                    <p className="font-bold">
-                      {details.certificate ? "Verified" : "Not Included"}
-                    </p>
-                  </div>
-                </div>
+                <StatCard bg="bg-blue-50" iconBg="bg-blue-100" iconColor="text-blue-600" icon={<Zap size={20} />} label="PACING" value={(details.pacing?.replace("_", " ") || "Self-paced")} />
+                <StatCard bg="bg-amber-50" iconBg="bg-amber-100" iconColor="text-amber-600" icon={<Award size={20} />} label="CERTIFICATE" value={details.certificate ? "Verified" : "Not Included"} />
+                {details.duration && <StatCard bg="bg-orange-50" iconBg="bg-orange-100" iconColor="text-orange-600" icon={<Clock size={20} />} label="DURATION" value={details.duration} />}
+                {details.platform && <StatCard bg="bg-purple-50" iconBg="bg-purple-100" iconColor="text-purple-600" icon={<Monitor size={20} />} label="PLATFORM" value={details.platform} />}
               </>
-            ) : (
+            )}
+            {data.type === "scholarship" && (
               <>
-                {details.funding_type && (
-                  <div className="bg-sky-50 p-4 rounded-xl border border-sky-100 flex items-center gap-3">
-                    <DollarSign size={20} className="text-sky-600" />
-                    <p className="font-semibold capitalize">
-                      {details.funding_type.replace("_", " ")}
-                    </p>
-                  </div>
-                )}
-                {details.degree && (
-                  <div className="bg-purple-50 p-4 rounded-xl border border-purple-100 flex items-center gap-3">
-                    <GraduationCap size={20} className="text-purple-600" />
-                    <p className="font-semibold capitalize">{details.degree}</p>
-                  </div>
-                )}
-                {details.stipend && (
-                  <div className="bg-green-50 p-4 rounded-xl border border-green-100 flex items-center gap-3">
-                    <DollarSign size={20} className="text-green-600" />
-                    <p className="font-semibold">{details.stipend}</p>
-                  </div>
-                )}
-                {details.duration && (
-                  <div className="bg-orange-50 p-4 rounded-xl border border-orange-100 flex items-center gap-3">
-                    <Clock size={20} className="text-orange-600" />
-                    <p className="font-semibold">{details.duration}</p>
-                  </div>
-                )}
+                {details.funding_type && <StatCard bg="bg-sky-50" iconBg="bg-sky-100" iconColor="text-sky-600" icon={<DollarSign size={20} />} label="FUNDING" value={details.funding_type.replace(/_/g, " ")} capitalize />}
+                {details.degree && <StatCard bg="bg-purple-50" iconBg="bg-purple-100" iconColor="text-purple-600" icon={<GraduationCap size={20} />} label="DEGREE" value={details.degree} capitalize />}
+                {details.gpa_requirement && <StatCard bg="bg-green-50" iconBg="bg-green-100" iconColor="text-green-600" icon={<Award size={20} />} label="MIN GPA" value={details.gpa_requirement} />}
+                {details.field_of_study && <StatCard bg="bg-amber-50" iconBg="bg-amber-100" iconColor="text-amber-600" icon={<BookOpen size={20} />} label="FIELD OF STUDY" value={details.field_of_study} />}
+              </>
+            )}
+            {data.type === "internship" && (
+              <>
+                {details.stipend && <StatCard bg="bg-green-50" iconBg="bg-green-100" iconColor="text-green-600" icon={<DollarSign size={20} />} label="STIPEND" value={details.stipend} />}
+                {details.duration && <StatCard bg="bg-orange-50" iconBg="bg-orange-100" iconColor="text-orange-600" icon={<Clock size={20} />} label="DURATION" value={details.duration} />}
+                {details.work_type && <StatCard bg="bg-blue-50" iconBg="bg-blue-100" iconColor="text-blue-600" icon={<Monitor size={20} />} label="WORK TYPE" value={details.work_type} capitalize />}
+                {details.department && <StatCard bg="bg-purple-50" iconBg="bg-purple-100" iconColor="text-purple-600" icon={<Briefcase size={20} />} label="DEPARTMENT" value={details.department} />}
+              </>
+            )}
+            {data.type === "fellowship" && (
+              <>
+                {details.fellowship_value && <StatCard bg="bg-sky-50" iconBg="bg-sky-100" iconColor="text-sky-600" icon={<DollarSign size={20} />} label="FELLOWSHIP VALUE" value={details.fellowship_value} />}
+                {details.duration && <StatCard bg="bg-orange-50" iconBg="bg-orange-100" iconColor="text-orange-600" icon={<Clock size={20} />} label="DURATION" value={details.duration} />}
+                {details.focus_area && <StatCard bg="bg-purple-50" iconBg="bg-purple-100" iconColor="text-purple-600" icon={<BookOpen size={20} />} label="FOCUS AREA" value={details.focus_area} />}
+                {details.eligibility && <StatCard bg="bg-green-50" iconBg="bg-green-100" iconColor="text-green-600" icon={<Award size={20} />} label="ELIGIBILITY" value={details.eligibility} />}
+              </>
+            )}
+            {data.type === "competition" && (
+              <>
+                {(details.prizes) && <StatCard bg="bg-amber-50" iconBg="bg-amber-100" iconColor="text-amber-600" icon={<Trophy size={20} />} label="PRIZES" value={Array.isArray(details.prizes) ? details.prizes.join(", ") : details.prizes} />}
+                {details.entry_fee && <StatCard bg="bg-sky-50" iconBg="bg-sky-100" iconColor="text-sky-600" icon={<DollarSign size={20} />} label="ENTRY FEE" value={details.entry_fee} />}
+                {details.team_size && <StatCard bg="bg-blue-50" iconBg="bg-blue-100" iconColor="text-blue-600" icon={<Users size={20} />} label="TEAM SIZE" value={details.team_size} />}
+                {details.category && <StatCard bg="bg-purple-50" iconBg="bg-purple-100" iconColor="text-purple-600" icon={<Tag size={20} />} label="CATEGORY" value={details.category} />}
+              </>
+            )}
+            {(data.type === "conference" || data.type === "workshop") && (
+              <>
+                {details.registration_fee && <StatCard bg="bg-sky-50" iconBg="bg-sky-100" iconColor="text-sky-600" icon={<DollarSign size={20} />} label="REGISTRATION FEE" value={details.registration_fee} />}
+                {details.format && <StatCard bg="bg-blue-50" iconBg="bg-blue-100" iconColor="text-blue-600" icon={<Monitor size={20} />} label="FORMAT" value={details.format} capitalize />}
+                {details.topics && <StatCard bg="bg-purple-50" iconBg="bg-purple-100" iconColor="text-purple-600" icon={<BookOpen size={20} />} label="TOPICS" value={details.topics} />}
+                {details.target_audience && <StatCard bg="bg-green-50" iconBg="bg-green-100" iconColor="text-green-600" icon={<Users size={20} />} label="TARGET AUDIENCE" value={details.target_audience} />}
+              </>
+            )}
+            {data.type === "exchange_program" && (
+              <>
+                {details.duration && <StatCard bg="bg-orange-50" iconBg="bg-orange-100" iconColor="text-orange-600" icon={<Clock size={20} />} label="DURATION" value={details.duration} />}
+                {details.funding_coverage && <StatCard bg="bg-sky-50" iconBg="bg-sky-100" iconColor="text-sky-600" icon={<DollarSign size={20} />} label="FUNDING COVERAGE" value={details.funding_coverage} />}
+                {details.language_requirement && <StatCard bg="bg-blue-50" iconBg="bg-blue-100" iconColor="text-blue-600" icon={<Languages size={20} />} label="LANGUAGE" value={details.language_requirement} />}
+                {details.age_limit && <StatCard bg="bg-amber-50" iconBg="bg-amber-100" iconColor="text-amber-600" icon={<Users size={20} />} label="AGE LIMIT" value={details.age_limit} />}
+              </>
+            )}
+            {data.type === "job" && (
+              <>
+                {details.salary && <StatCard bg="bg-green-50" iconBg="bg-green-100" iconColor="text-green-600" icon={<DollarSign size={20} />} label="SALARY" value={details.salary} />}
+                {details.employment_type && <StatCard bg="bg-sky-50" iconBg="bg-sky-100" iconColor="text-sky-600" icon={<Briefcase size={20} />} label="EMPLOYMENT" value={details.employment_type.replace(/-/g, " ")} capitalize />}
+                {details.experience && <StatCard bg="bg-amber-50" iconBg="bg-amber-100" iconColor="text-amber-600" icon={<Award size={20} />} label="EXPERIENCE" value={details.experience} />}
+                {details.work_type && <StatCard bg="bg-blue-50" iconBg="bg-blue-100" iconColor="text-blue-600" icon={<Monitor size={20} />} label="WORK TYPE" value={details.work_type} capitalize />}
               </>
             )}
           </div>
