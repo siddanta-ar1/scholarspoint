@@ -175,12 +175,14 @@ export default function OpportunityDetailView({ data }: { data: Opportunity }) {
                 <StatCard bg="bg-amber-50" iconBg="bg-amber-100" iconColor="text-amber-600" icon={<Award size={20} />} label="CERTIFICATE" value={details.certificate ? "Verified" : "Not Included"} />
                 {details.duration && <StatCard bg="bg-orange-50" iconBg="bg-orange-100" iconColor="text-orange-600" icon={<Clock size={20} />} label="DURATION" value={details.duration} />}
                 {details.platform && <StatCard bg="bg-purple-50" iconBg="bg-purple-100" iconColor="text-purple-600" icon={<Monitor size={20} />} label="PLATFORM" value={details.platform} />}
+                {details.language && <StatCard bg="bg-blue-50" iconBg="bg-blue-100" iconColor="text-blue-600" icon={<Languages size={20} />} label="LANGUAGE" value={details.language} />}
+                {details.difficulty && <StatCard bg="bg-green-50" iconBg="bg-green-100" iconColor="text-green-600" icon={<Zap size={20} />} label="DIFFICULTY" value={details.difficulty} capitalize />}
               </>
             )}
             {data.type === "scholarship" && (
               <>
                 {details.funding_type && <StatCard bg="bg-sky-50" iconBg="bg-sky-100" iconColor="text-sky-600" icon={<DollarSign size={20} />} label="FUNDING" value={details.funding_type.replace(/_/g, " ")} capitalize />}
-                {details.degree && <StatCard bg="bg-purple-50" iconBg="bg-purple-100" iconColor="text-purple-600" icon={<GraduationCap size={20} />} label="DEGREE" value={details.degree} capitalize />}
+                {details.degree_level && <StatCard bg="bg-purple-50" iconBg="bg-purple-100" iconColor="text-purple-600" icon={<GraduationCap size={20} />} label="DEGREE" value={details.degree_level} capitalize />}
                 {details.gpa_requirement && <StatCard bg="bg-green-50" iconBg="bg-green-100" iconColor="text-green-600" icon={<Award size={20} />} label="MIN GPA" value={details.gpa_requirement} />}
                 {details.field_of_study && <StatCard bg="bg-amber-50" iconBg="bg-amber-100" iconColor="text-amber-600" icon={<BookOpen size={20} />} label="FIELD OF STUDY" value={details.field_of_study} />}
               </>
@@ -227,9 +229,9 @@ export default function OpportunityDetailView({ data }: { data: Opportunity }) {
             )}
             {data.type === "job" && (
               <>
-                {details.salary && <StatCard bg="bg-green-50" iconBg="bg-green-100" iconColor="text-green-600" icon={<DollarSign size={20} />} label="SALARY" value={details.salary} />}
+                {details.salary_range && <StatCard bg="bg-green-50" iconBg="bg-green-100" iconColor="text-green-600" icon={<DollarSign size={20} />} label="SALARY" value={details.salary_range} />}
                 {details.employment_type && <StatCard bg="bg-sky-50" iconBg="bg-sky-100" iconColor="text-sky-600" icon={<Briefcase size={20} />} label="EMPLOYMENT" value={details.employment_type.replace(/-/g, " ")} capitalize />}
-                {details.experience && <StatCard bg="bg-amber-50" iconBg="bg-amber-100" iconColor="text-amber-600" icon={<Award size={20} />} label="EXPERIENCE" value={details.experience} />}
+                {details.experience_required && <StatCard bg="bg-amber-50" iconBg="bg-amber-100" iconColor="text-amber-600" icon={<Award size={20} />} label="EXPERIENCE" value={details.experience_required} />}
                 {details.work_type && <StatCard bg="bg-blue-50" iconBg="bg-blue-100" iconColor="text-blue-600" icon={<Monitor size={20} />} label="WORK TYPE" value={details.work_type} capitalize />}
               </>
             )}

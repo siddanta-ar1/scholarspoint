@@ -14,7 +14,7 @@ export type UserRole = "user" | "admin" | "moderator";
 // --- Type-Specific Details Interfaces ---
 
 export interface ScholarshipDetails {
-  degree?: string;
+  degree_level?: string;
   funding_type?: "fully_funded" | "partially_funded" | "tuition_only" | "self_funded";
   gpa_requirement?: string;
   field_of_study?: string;
@@ -56,9 +56,9 @@ export interface ExchangeProgramDetails {
 }
 
 export interface JobDetails {
-  salary?: string;
+  salary_range?: string;
   employment_type?: "full-time" | "part-time" | "contract";
-  experience?: string;
+  experience_required?: string;
   work_type?: "remote" | "on-site" | "hybrid";
 }
 
@@ -69,6 +69,8 @@ export interface OnlineCourseDetails {
   subjects?: string[];
   duration?: string;
   platform?: string;
+  language?: string;
+  difficulty?: string;
 }
 
 // Fallback for types that don't have specific strict fields yet

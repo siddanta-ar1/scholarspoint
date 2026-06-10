@@ -181,8 +181,8 @@ export default function OpportunityForm({
                 <GraduationCap size={14} /> Degree Level
               </Label>
               <Select
-                value={details.degree || ""}
-                onValueChange={(v) => handleDetailChange("degree", v)}
+                value={details.degree_level || ""}
+                onValueChange={(v) => handleDetailChange("degree_level", v)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Select degree" />
@@ -462,8 +462,8 @@ export default function OpportunityForm({
             <div className="grid gap-2">
               <Label>Salary Range</Label>
               <Input
-                value={details.salary || ""}
-                onChange={(e) => handleDetailChange("salary", e.target.value)}
+                value={details.salary_range || ""}
+                onChange={(e) => handleDetailChange("salary_range", e.target.value)}
                 placeholder="e.g., $50,000 - $70,000"
               />
             </div>
@@ -486,8 +486,8 @@ export default function OpportunityForm({
             <div className="grid gap-2">
               <Label>Experience Required</Label>
               <Input
-                value={details.experience || ""}
-                onChange={(e) => handleDetailChange("experience", e.target.value)}
+                value={details.experience_required || ""}
+                onChange={(e) => handleDetailChange("experience_required", e.target.value)}
                 placeholder="e.g., 2-4 years"
               />
             </div>
