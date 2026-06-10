@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { User, LogOut, LayoutDashboard, Loader2 } from "lucide-react";
+import { User, LogOut, LayoutDashboard } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { Button } from "./ui/button";
@@ -18,11 +18,8 @@ export default function AuthButtons() {
   const { user, isLoading, isAdmin, signInWithGoogle, signOut } = useAuth();
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center w-10 h-10">
-        <Loader2 className="w-5 h-5 animate-spin text-sky-600" />
-      </div>
-    );
+    // Skeleton matches the avatar/button dimensions — no layout shift
+    return <div className="w-10 h-10 rounded-full bg-muted animate-pulse" />;
   }
 
   // Robust Avatar detection

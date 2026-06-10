@@ -2,7 +2,7 @@ import { PostCard } from "@/components/PostCard";
 import { supabase } from "@/lib/supabaseClient";
 import { BookOpen } from "lucide-react";
 
-export const revalidate = 0;
+export const revalidate = 300;
 
 export default async function BlogListPage() {
   const { data: posts } = await supabase

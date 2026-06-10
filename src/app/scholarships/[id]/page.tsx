@@ -3,7 +3,7 @@ import OpportunityDetailView from "@/components/OpportunityDetailView";
 import { notFound } from "next/navigation";
 import { Metadata } from "next";
 
-export const revalidate = 0;
+export const revalidate = 60;
 
 export async function generateMetadata({
   params,

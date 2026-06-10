@@ -28,8 +28,8 @@ export default function ImageUpload({
       if (!file) return;
 
       const fileExt = file.name.split(".").pop();
-      const fileName = `${Math.random()}.${fileExt}`;
-      const filePath = `${fileName}`;
+      const fileName = `${crypto.randomUUID()}.${fileExt}`;
+      const filePath = fileName;
 
       const { error: uploadError } = await supabase.storage
         .from("public-images") // Ensure this matches your bucket name

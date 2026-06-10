@@ -4,7 +4,7 @@ import { Globe, PlaneTakeoff, ShieldCheck, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
 
-export const revalidate = 0;
+export const revalidate = 300;
 
 export default async function VisaGuidesPage() {
   const { data: guides } = await supabase

@@ -3,7 +3,7 @@ import OpportunityList from "@/components/OpportunityList";
 import { Briefcase, ArrowLeft } from "lucide-react";
 import Link from "next/link";
 
-export const revalidate = 0;
+export const revalidate = 300;
 
 export default async function JobsPage() {
   const { data } = await supabase

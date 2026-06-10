@@ -2,6 +2,7 @@
 import { usePathname } from "next/navigation";
 import Navbar from "@/components/navbar";
 import { Footer } from "@/components/footer";
+import { AuthProvider } from "@/lib/AuthContext";
 
 export default function ClientLayoutWrapper({
   children,
@@ -12,10 +13,10 @@ export default function ClientLayoutWrapper({
   const isAdmin = pathname?.startsWith("/admin");
 
   return (
-    <>
+    <AuthProvider>
       {!isAdmin && <Navbar />}
       {children}
       {!isAdmin && <Footer />}
-    </>
+    </AuthProvider>
   );
 }

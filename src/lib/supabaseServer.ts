@@ -33,19 +33,19 @@ export async function createSupabaseServerClient() {
 }
 
 // Helper to get current user session on server
+// Uses getUser() which validates the JWT with Supabase — getSession() trusts
+// the local cookie without server verification and is not safe for auth checks.
 export async function getServerSession() {
     const supabase = await createSupabaseServerClient();
     const {
-        data: { session },
+        data: { user },
         error,
-    } = await supabase.auth.getSession();
+    } = await supabase.auth.getUser();
 
-    if (error) {
-        console.error("Session error:", error.message);
-        return null;
-    }
+    if (error || !user) return null;
 
-    return session;
+    // Reconstruct a minimal session-like object callers expect
+    return { user };
 }
 
 // Helper to get current user profile with role
