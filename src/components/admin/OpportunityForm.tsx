@@ -141,12 +141,16 @@ export default function OpportunityForm({
     setLoading(true);
 
     try {
+      const nullIfEmpty = (v: string | undefined | null) => v?.trim() || null;
       const payload = {
         ...formData,
         slug: initialData ? formData.slug : generateSlug(formData.title),
         type,
         details: details,
         updated_at: new Date().toISOString(),
+        deadline: nullIfEmpty(formData.deadline),
+        start_date: nullIfEmpty(formData.start_date),
+        end_date: nullIfEmpty(formData.end_date),
       };
 
       const { error } = initialData?.id
@@ -861,7 +865,10 @@ export default function OpportunityForm({
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid gap-2">
-                  <Label>Application Deadline</Label>
+                  <Label className="flex items-center justify-between">
+                    Application Deadline
+                    <span className="text-xs text-muted-foreground font-normal">Optional</span>
+                  </Label>
                   <Input
                     type="date"
                     name="deadline"
@@ -870,7 +877,10 @@ export default function OpportunityForm({
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label>Start Date</Label>
+                  <Label className="flex items-center justify-between">
+                    Start Date
+                    <span className="text-xs text-muted-foreground font-normal">Optional</span>
+                  </Label>
                   <Input
                     type="date"
                     name="start_date"
@@ -879,7 +889,10 @@ export default function OpportunityForm({
                   />
                 </div>
                 <div className="grid gap-2">
-                  <Label>End Date</Label>
+                  <Label className="flex items-center justify-between">
+                    End Date
+                    <span className="text-xs text-muted-foreground font-normal">Optional</span>
+                  </Label>
                   <Input
                     type="date"
                     name="end_date"
